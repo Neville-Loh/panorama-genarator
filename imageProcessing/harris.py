@@ -1,5 +1,6 @@
-from typing import List, Tuple, Optional, Type
+from typing import List, Tuple, Optional, Type, Any
 import numpy as np
+import heapq
 import imageProcessing.utilities as IPUtils
 import imageProcessing.convolve2D as IPConv2D
 
@@ -9,10 +10,21 @@ ImageArray = List[List[float]]
 
 
 class Corner:
-    def __init__(self, x: int, y: int, cornerness: float):
-        self.x = x
-        self.y = y
+    def __init__(self, index: Tuple[int, int], cornerness: float):
+        self.x, self.y = index
         self.cornerness = cornerness
+
+    def __lt__(self, other):
+        return self.cornerness > other.cornerness
+
+    def __eq__(self, other):
+        return self.cornerness == other.cornerness
+
+    def __str__(self) -> str:
+        return str((self.x, self.y, self.cornerness))
+
+    def __repr__(self):
+        return str(self)
 
 
 def sobel(px_array: ImageArray, image_width: int, image_height: int) -> Tuple[ImageArray, ImageArray]:
@@ -48,9 +60,16 @@ def compute_gaussian_averaging(pixel_array: ImageArray, image_width: int,
     return averaged
 
 
-def get_cornerness(ix2: ImageArray, iy2: ImageArray, ixiy: ImageArray, alpha: float) -> ImageArray:
+def get_image_cornerness(ix2: ImageArray, iy2: ImageArray, ixiy: ImageArray, alpha: float) -> ImageArray:
     ix2, iy2, ixiy = np.array(ix2), np.array(iy2), np.array(ixiy)
-    trace: ImageArray = np.square(np.add(ix2,iy2)) * alpha
-    result = np.multiply(ix2,iy2) - np.square(ixiy) - trace
+    trace: ImageArray = np.square(np.add(ix2, iy2)) * alpha
+
+    result = np.multiply(ix2, iy2) - np.square(ixiy) - (np.square(np.add(ix2, iy2)) * alpha)
     return result
 
+
+def get_all_corner(img: Any) -> List[Any]:
+    pq = []
+    for index, val in np.ndenumerate(img):
+        heapq.heappush(pq, Corner(index, val))
+    return pq
