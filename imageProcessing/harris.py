@@ -10,6 +10,7 @@ ImageArray = List[List[float]]
 
 
 class Corner:
+
     def __init__(self, index: Tuple[int, int], cornerness: float):
         self.x, self.y = index
         self.cornerness = cornerness
@@ -68,8 +69,37 @@ def get_image_cornerness(ix2: ImageArray, iy2: ImageArray, ixiy: ImageArray, alp
     return result
 
 
-def get_all_corner(img: Any) -> List[Any]:
+def get_all_corner(img: Any) -> List[Type[Corner]]:
     pq = []
     for index, val in np.ndenumerate(img):
         heapq.heappush(pq, Corner(index, val))
     return pq
+
+
+def bruteforce_non_max_suppression(input_img: np.ndarray, window_size: Optional[int] = 4) -> np.ndarray:
+    height, width = np.shape(input_img)
+    input_img = input_img.flatten()
+
+    # Create window
+    window = []
+    for i in range(window_size):
+        window += [i * width + j for j in range(window_size)]
+    window = np.array(window)
+
+    row = 0
+    while window[-1] < len(input_img):
+        max_index = np.argmax(input_img[window])
+
+        # suppress non max to 0
+        for i, img_idx in enumerate(window):
+            if i != max_index:
+                input_img[img_idx] = 0
+
+        # shift to next row
+        if window[0] + window_size > width * row + width - 1:
+            window += window_size
+            row += 1
+        else:
+            window += 1
+
+    return input_img.reshape(height, width)
