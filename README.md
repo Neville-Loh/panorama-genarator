@@ -1,5 +1,10 @@
 # A1Skeleton
 
+
+Current state:
+![image](https://user-images.githubusercontent.com/48974742/158395702-6bcbdf56-d962-443c-8b33-510009ac585f.png)
+
+
 This simple code skeleton is a starting point for the CompSci 773 2022 practical assignment on image stitching. 
 
 Please note that you can also use numpy as a representation for 2D images, this will be beneficial in terms 

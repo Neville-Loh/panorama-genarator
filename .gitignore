@@ -1,0 +1,6 @@
+logs/
+venv/
+output/
+*.pyc
+*.xml
+*.iml
