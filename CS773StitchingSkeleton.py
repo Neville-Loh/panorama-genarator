@@ -106,7 +106,7 @@ def main():
 
     # Task: Extraction of Harris corners
     # According to lecture compute Harris corner for both images
-    # Perform a simple non max suppression in a 3x3 neigbour-hood, and report the 1000 strongest corner per image.
+    # Perform a simple non max suppression in a 3x3 neighbour-hood, and report the 1000 strongest corner per image.
 
     px_array_left_original = np.array(px_array_left_original)
     # px_array_left = np.array(px_array_left)
@@ -121,7 +121,7 @@ def main():
     # Step 2
     # Implement e.g. Sobel filter in x and y, (The gradiate)  for X and Y derivatives
 
-    ix, iy = sobel(px_array_left, image_width, image_height)
+    ix, iy = sobel(np.array(px_array_left), image_width, image_height)
     axs1[0][2].imshow(ix, cmap='gray')
     axs1[0][3].imshow(iy, cmap='gray')
 
@@ -151,7 +151,7 @@ def main():
     axs1[2][3].imshow(corner_img_array, cmap='gray')
 
     # 5.5 non-max suppression
-    corner_img_array = bruteforce_non_max_suppression(corner_img_array)
+    corner_img_array = bruteforce_non_max_suppression(corner_img_array, window_size=3)
 
     # 6 Prepare n=1000 strongest conner per image
     pq_1000_coor = [(corner.y, corner.x) for corner in heapq.nsmallest(1000, get_all_corner(corner_img_array))]

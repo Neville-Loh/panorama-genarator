@@ -6,7 +6,7 @@ import imageProcessing.convolve2D as IPConv2D
 
 from imageProcessing.convolve2D import computeSeparableConvolution2DOddNTapBorderZero
 
-ImageArray = List[List[float]]
+ImageArray = np.ndarray
 
 
 class Corner:
@@ -42,13 +42,11 @@ def sobel(px_array: ImageArray, image_width: int, image_height: int) -> Tuple[Im
     i_y = computeSeparableConvolution2DOddNTapBorderZero(px_array, image_width, image_height,
                                                          kernelAlongX=iy_kernel[0],
                                                          kernelAlongY=iy_kernel[1])
-    return i_x, i_y
+    return np.array(i_x), np.array(i_y)
 
 
 def get_square_and_mixed_derivatives(i_x: ImageArray, i_y: ImageArray) -> Tuple[ImageArray, ImageArray, ImageArray]:
-    i_x = np.array(i_x)
-    i_y = np.array(i_y)
-    return np.square(i_x).tolist(), np.square(i_y).tolist(), np.multiply(i_x, i_y).tolist()
+    return np.square(i_x), np.square(i_y), np.multiply(i_x, i_y)
 
 
 def compute_gaussian_averaging(pixel_array: ImageArray, image_width: int,
@@ -56,27 +54,24 @@ def compute_gaussian_averaging(pixel_array: ImageArray, image_width: int,
     # You can customize GaussianBlur coefficient by: http://dev.theomader.com/gaussian-kernel-calculator
     SAMPLE_KERNEL = [0.1784, 0.210431, 0.222338, 0.210431, 0.1784]
     averaged = IPConv2D.computeSeparableConvolution2DOddNTapBorderZero(
-        pixel_array, image_width, image_height, SAMPLE_KERNEL)
+        pixel_array.tolist(), image_width, image_height, SAMPLE_KERNEL)
 
-    return averaged
+    return np.array(averaged)
 
 
 def get_image_cornerness(ix2: ImageArray, iy2: ImageArray, ixiy: ImageArray, alpha: float) -> ImageArray:
-    ix2, iy2, ixiy = np.array(ix2), np.array(iy2), np.array(ixiy)
-    trace: ImageArray = np.square(np.add(ix2, iy2)) * alpha
-
     result = np.multiply(ix2, iy2) - np.square(ixiy) - (np.square(np.add(ix2, iy2)) * alpha)
     return result
 
 
-def get_all_corner(img: Any) -> List[Type[Corner]]:
+def get_all_corner(img: ImageArray) -> List[Type[Corner]]:
     pq = []
     for index, val in np.ndenumerate(img):
         heapq.heappush(pq, Corner(index, val))
     return pq
 
 
-def bruteforce_non_max_suppression(input_img: np.ndarray, window_size: Optional[int] = 4) -> np.ndarray:
+def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[int] = 4) -> ImageArray:
     height, width = np.shape(input_img)
     input_img = input_img.flatten()
 
