@@ -1,4 +1,3 @@
- 
 from matplotlib import pyplot
 from matplotlib.patches import Circle, ConnectionPatch
 import numpy as np
@@ -14,13 +13,13 @@ import imageProcessing.smoothing as IPSmooth
 # this is a helper function that puts together an RGB image for display in matplotlib, given
 # three color channels for r, g, and b, respectively
 from imageProcessing.harris import compute_gaussian_averaging, get_square_and_mixed_derivatives, get_image_cornerness, \
-    get_all_corner, sobel
+    get_all_corner, sobel, bruteforce_non_max_suppression
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
 
 
-def prepareRGBImageFromIndividualArrays(r_pixel_array,g_pixel_array,b_pixel_array,image_width,image_height):
+def prepareRGBImageFromIndividualArrays(r_pixel_array, g_pixel_array, b_pixel_array, image_width, image_height):
     rgbImage = []
     for y in range(image_height):
         row = []
@@ -36,7 +35,6 @@ def prepareRGBImageFromIndividualArrays(r_pixel_array,g_pixel_array,b_pixel_arra
 
 # takes two images (of the same pixel size!) as input and returns a combined image of double the image width
 def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image_height):
-
     matchingImage = IPUtils.createInitializedGreyscalePixelArray(image_width * 2, image_height)
     for y in range(image_height):
         for x in range(image_width):
@@ -46,15 +44,15 @@ def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image
     return matchingImage
 
 
-
-
 # This is our code skeleton that performs the stitching
 def main():
-    filename_left_image = CHECKER_BOARD
-    filename_right_image = CHECKER_BOARD
+    filename_left_image = MOUNTAIN_LEFT
+    filename_right_image = MOUNTAIN_LEFT
 
-    (image_width, image_height, px_array_left_original)  = IORW.readRGBImageAndConvertToGreyscalePixelArray(filename_left_image)
-    (image_width, image_height, px_array_right_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(filename_right_image)
+    (image_width, image_height, px_array_left_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(
+        filename_left_image)
+    (image_width, image_height, px_array_right_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(
+        filename_right_image)
 
     start = timer()
     px_array_left = IPSmooth.computeGaussianAveraging3x3(px_array_left_original, image_width, image_height)
@@ -65,9 +63,6 @@ def main():
     # make sure greyscale image is stretched to full 8 bit intensity range of 0 to 255
     px_array_left = IPPixelOps.scaleTo0And255AndQuantize(px_array_left, image_width, image_height)
     px_array_right = IPPixelOps.scaleTo0And255AndQuantize(px_array_right, image_width, image_height)
-
-
-
 
     # # some simplevisualizations
     #
@@ -154,20 +149,19 @@ def main():
     # Harris response function C, sorted list of tuples
     corner_img_array = get_image_cornerness(ix2_blur, iy2_blur, ixiy_blur, 0.04)
     axs1[2][3].imshow(corner_img_array, cmap='gray')
-    pq = get_all_corner(corner_img_array)
+
+    # 5.5 non-max suppression
+    corner_img_array = bruteforce_non_max_suppression(corner_img_array)
 
     # 6 Prepare n=1000 strongest conner per image
-    pq_1000_coor = [(corner.y, corner.x) for corner in  heapq.nsmallest(1000, pq)]
-    print(pq_1000_coor)
+    pq_1000_coor = [(corner.y, corner.x) for corner in heapq.nsmallest(1000, get_all_corner(corner_img_array))]
+
     # some simple visualizations
     axs1[3][0].imshow(px_array_left_original, cmap='gray')
-
     axs1[3][0].scatter(*zip(*pq_1000_coor), s=1, color='r')
 
     pyplot.show()
 
 
-
 if __name__ == "__main__":
     main()
-
