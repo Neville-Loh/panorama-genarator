@@ -10,7 +10,6 @@ ImageArray = np.ndarray
 
 
 class Corner:
-
     def __init__(self, index: Tuple[int, int], cornerness: float):
         self.x, self.y = index
         self.cornerness = cornerness
@@ -71,7 +70,7 @@ def get_all_corner(img: ImageArray) -> List[Type[Corner]]:
     return pq
 
 
-def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[int] = 4) -> ImageArray:
+def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[int] = 3) -> ImageArray:
     height, width = np.shape(input_img)
     input_img = input_img.flatten()
 
@@ -86,9 +85,11 @@ def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[
         max_index = np.argmax(input_img[window])
 
         # suppress non max to 0
-        for i, img_idx in enumerate(window):
-            if i != max_index:
-                input_img[img_idx] = 0
+        # for i, img_idx in enumerate(window):
+        #     if i != max_index:
+        #         input_img[img_idx] = 0
+        if (max_index != (center_index := window_size + window_size// 2)):
+            input_img[center_index] = 0
 
         # shift to next row
         if window[0] + window_size > width * row + width - 1:
