@@ -85,10 +85,7 @@ def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[
         max_index = np.argmax(input_img[window])
 
         # suppress non max to 0
-        # for i, img_idx in enumerate(window):
-        #     if i != max_index:
-        #         input_img[img_idx] = 0
-        if (max_index != (center_index := window_size + window_size// 2)):
+        if max_index != (center_index := (window_size ** 2 // 2)):
             input_img[center_index] = 0
 
         # shift to next row
