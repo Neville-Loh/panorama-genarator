@@ -17,6 +17,7 @@ from imageProcessing.harris import compute_gaussian_averaging, get_square_and_mi
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
+MOUNTAIN_RIGHT = "./images/panoramaStitching/tongariro_right_01.png"
 
 
 def prepareRGBImageFromIndividualArrays(r_pixel_array, g_pixel_array, b_pixel_array, image_width, image_height):
@@ -47,7 +48,7 @@ def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image
 # This is our code skeleton that performs the stitching
 def main():
     filename_left_image = MOUNTAIN_LEFT
-    filename_right_image = MOUNTAIN_LEFT
+    filename_right_image = MOUNTAIN_RIGHT
 
     (image_width, image_height, px_array_left_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(
         filename_left_image)
