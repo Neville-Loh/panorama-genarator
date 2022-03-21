@@ -12,7 +12,7 @@ def plot_histogram(data, title="Histogram", x_axis_label="Value", y_axis_label="
     plt.text(110, 60, "This is a generic label at x=110 y=60")
     maxfreq = n.max()
     plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
-    plt.show()
+    return plt
 
 
 def demo_histogram():

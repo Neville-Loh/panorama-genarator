@@ -2,6 +2,8 @@ from matplotlib import pyplot
 from matplotlib.patches import Circle, ConnectionPatch
 import numpy as np
 import heapq
+from data_exploration.histograms import plot_histogram
+
 
 from timeit import default_timer as timer
 
@@ -44,6 +46,13 @@ def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image
 
     return matchingImage
 
+def pixelArrayToSingleList(pixelArray):
+    list_of_pixel_values = []
+    for row in pixelArray:
+        for item in row:
+            list_of_pixel_values.append(item)
+    return list_of_pixel_values
+
 
 # This is our code skeleton that performs the stitching
 def main():
@@ -64,6 +73,10 @@ def main():
     # make sure greyscale image is stretched to full 8 bit intensity range of 0 to 255
     px_array_left = IPPixelOps.scaleTo0And255AndQuantize(px_array_left, image_width, image_height)
     px_array_right = IPPixelOps.scaleTo0And255AndQuantize(px_array_right, image_width, image_height)
+
+    plot_histogram(pixelArrayToSingleList(px_array_left)).show()
+    plot_histogram(pixelArrayToSingleList(px_array_right)).show()
+
 
     # # some simplevisualizations
     #
