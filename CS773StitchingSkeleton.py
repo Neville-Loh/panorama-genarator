@@ -174,6 +174,11 @@ def extension_compare_alphas():
         plot_histogram([c.cornerness for c in corners],
                        "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
 
+def extension_compare_window_size():
+    pass
+
+
+
 def extension_naiveDetection():
     left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
 

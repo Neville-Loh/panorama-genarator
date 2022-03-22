@@ -28,6 +28,9 @@
 ![1000 Harris Corners on left and right original images](./results_figures/basic_implementation_output.png)
 
 
+![The outputs of our 3 corner finding implementations on 3 different images](./results_figures/3x3%20Corner%20and%20Image%20Comparisons.png)
+
+
 This simple code skeleton is a starting point for the CompSci 773 2022 practical assignment on image stitching. 
 
 Please note that you can also use numpy as a representation for 2D images, this will be beneficial in terms 
