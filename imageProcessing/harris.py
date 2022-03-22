@@ -115,8 +115,6 @@ def get_square_and_mixed_derivatives(i_x: ImageArray, i_y: ImageArray) -> Tuple[
 
 def compute_gaussian_averaging(pixel_array: ImageArray, windows_size: Optional[int] = 5) -> ImageArray:
     image_height, image_width = np.shape(pixel_array)
-    # You can customize GaussianBlur coefficient by: http://dev.theomader.com/gaussian-kernel-calculator
-    #SAMPLE_KERNEL = [0.1784, 0.210431, 0.222338, 0.210431, 0.1784]
     kernel = get_gaussian_kernel(windows_size, sigma=1)
     averaged = IPConv2D.computeSeparableConvolution2DOddNTapBorderZero(
         pixel_array.tolist(), image_width, image_height, kernel)
