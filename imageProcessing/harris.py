@@ -138,6 +138,7 @@ def get_all_corner(img: ImageArray) -> List[Type[Corner]]:
 
 def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[int] = 3) -> ImageArray:
     height, width = np.shape(input_img)
+    center_window_index = window_size ** 2 // 2
     input_img = input_img.flatten()
 
     # Create window
@@ -150,9 +151,9 @@ def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[
     while window[-1] < len(input_img):
         max_index = np.argmax(input_img[window])
 
-        # suppress non max to 0
-        if max_index != (center_index := (window_size ** 2 // 2)):
-            input_img[center_index] = 0
+        # suppress non max to 0 if nearest neighbour have a higher activation
+        if max_index != center_window_index:
+            input_img[window[center_window_index]] = 0
 
         # shift to next row
         if window[0] + window_size > width * row + width - 1:
