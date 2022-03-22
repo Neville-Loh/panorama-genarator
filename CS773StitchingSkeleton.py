@@ -76,6 +76,41 @@ def filenameToSmoothedAndScaledpxArray(filename):
     print("elapsed time  image smoothing: ", end - start)
     return px_array_smoothed_scaled
 
+def basic_comparison():
+    left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
+    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
+
+    left_corners = compute_harris_corner(left_px_array,
+                                         n_corner=1000,
+                                         alpha=0.04,
+                                         gaussian_window_size=5,
+                                         plot_image=False)
+
+    right_corners = compute_harris_corner(left_px_array,
+                                         n_corner=1000,
+                                         alpha=0.04,
+                                         gaussian_window_size=5,
+                                         plot_image=False)
+
+    fig1, axs1 = pyplot.subplots(1, 2)
+    axs1[0].set_title('Harris response left overlaid on orig image')
+    axs1[1].set_title('Harris response right overlaid on orig image')
+    axs1[0].imshow(left_px_array, cmap='gray')
+    axs1[1].imshow(right_px_array, cmap='gray')
+
+    # plot a red point in the center of each image
+    for corner in left_corners:
+        circle = Circle((corner.x, corner.y), 3.5, color='r')
+        axs1[0].add_patch(circle)
+
+    for corner in right_corners:
+        circle = Circle((corner.x, corner.y), 3.5, color='r')
+        axs1[1].add_patch(circle)
+
+    print("We plotted {} corners on the left image".format(len(left_corners)))
+    print("We plotted {} corners on the right image".format(len(right_corners)))
+
+    pyplot.show()
 
 def extension_compare_alphas():
     left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
@@ -129,6 +164,7 @@ def main():
 
 
 if __name__ == "__main__":
+    basic_comparison()
     # extension_compare_alphas()
-    extension_naiveDetection()
-    solem.solemCornerDetection(OXFORD_LEFT, True)
+    # extension_naiveDetection()
+    # solem.solemCornerDetection(OXFORD_LEFT, True)
