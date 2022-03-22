@@ -179,21 +179,19 @@ def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images = [MOUNTAI
 
 
 def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
-    fig1, axs1 = pyplot.subplots(len(images), 3)
+    fig1, axs1 = pyplot.subplots(len(images), len(windowsToTest))
 
     for image in images:
         image_index = images.index(image)
         image_px_array = filenameToSmoothedAndScaledpxArray(image)
 
         for window_size in windowsToTest:
-            window_index = windowsToTest.index(window_index)
+            window_index = windowsToTest.index(window_size)
             corners = compute_harris_corner(image_px_array,
                                             n_corner=1000,
                                             alpha=0.04,
                                             gaussian_window_size=window_size,
                                             plot_image=False)
-
-
 
             axs1[image_index][window_index].set_title(
                 'Berg and Loh Harris Response Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size, window_size, image_index))
@@ -223,7 +221,8 @@ def main():
     basic_comparison()
     extension_compare_three_corner_algorithms_on_two_or_more_images()
     extension_compare_alphas()
+    extension_compare_window_size()
     extension_thresholds_and_histograms()
 
 if __name__ == "__main__":
-    main()
+    extension_compare_window_size()
