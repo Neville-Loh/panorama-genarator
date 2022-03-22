@@ -36,7 +36,7 @@ def compute_harris_corner(img_original: List[List[int]],
                           alpha: Optional[float] = 0.04,
                           gaussian_window_size: Optional[int] = 3,
                           plot_image: Optional[bool] = False) \
-        -> Any:
+        -> List[Corner]:
     """
     Compute the harris corner for the picture
     return the corner activated value in decreasing value
@@ -66,7 +66,6 @@ def compute_harris_corner(img_original: List[List[int]],
     # gaussian blur
     ix2_blur_left, iy2_blur_left, ixiy_blur_left = [compute_gaussian_averaging(img, windows_size=gaussian_window_size) for img in t_left]
 
-    # axs1[2][3].axis('off')
 
     # Choose a Harris constant between 0.04 and 0.06
 
@@ -78,21 +77,18 @@ def compute_harris_corner(img_original: List[List[int]],
     corner_img_array = bruteforce_non_max_suppression(corner_img_array, window_size=3)
 
     # 6 Prepare n=1000 strongest conner per image
-    pq_n_best_corner = [(corner.y, corner.x, corner.cornerness) for corner in
-                         heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
+    pq_n_best_corner = heapq.nsmallest(n_corner, get_all_corner(corner_img_array))
 
-    pq_n_best_corner_coordinates = [(corner.y, corner.x) for corner in
-                        heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
+    pq_n_best_corner_coor = [(corner.y, corner.x) for corner in pq_n_best_corner]
 
     if plot_image:
         plt.figure(figsize=(20, 18))
         plt.gray()
         plt.imshow(img_original)
-        plt.scatter(*zip(*pq_n_best_corner_coordinates), s=1, color='r')
+        plt.scatter(*zip(*pq_n_best_corner_coor), s=1, color='r')
         plt.axis('off')
         plt.show()
-    else:
-        return pq_n_best_corner
+    return pq_n_best_corner
 
 
 def sobel(px_array: ImageArray) -> Tuple[ImageArray, ImageArray]:
