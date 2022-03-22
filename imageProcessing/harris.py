@@ -81,8 +81,9 @@ def compute_harris_corner(img_original: List[List[int]],
     pq_n_best_corner = [(corner.y, corner.x, corner.cornerness) for corner in
                          heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
 
-    pq_n_best_corner_coordinates = [(corner.y, corner.x) for corner in
-                        heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
+    pq_n_best_corner_coordinates = []
+    for i in pq_n_best_corner:
+        pq_n_best_corner_coordinates.append((i[0], i[1]))
 
     if plot_image:
         plt.figure(figsize=(20, 18))

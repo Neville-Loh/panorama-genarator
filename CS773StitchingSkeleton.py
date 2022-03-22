@@ -88,9 +88,10 @@ def extension_compare_alphas():
                                         plot_image=True)
 
         cornerness = []
-        for i in corners: cornerness.append(i[2])
-
-        plot_histogram(cornerness, "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
+        # for i in corners:
+        #     cornerness.append(i[2])
+        #
+        # plot_histogram(cornerness, "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
 
 
 

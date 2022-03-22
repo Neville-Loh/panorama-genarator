@@ -22,4 +22,4 @@ def get_gaussian_kernel(window_size: int, sigma: int):
 #    smoothing_3tap = [0.27901, 0.44198, 0.27901]
 for i in range(10, 30):
     print(s := i / 25)
-    print(get_gaussian_kernel(window_size=3, sigma=s))
+    print(get_gaussian_kernel(window_size=5, sigma=s))
