@@ -112,6 +112,53 @@ def basic_comparison():
 
     pyplot.show()
 
+def extension_compare_three_corner_algorithms_on_three_images():
+
+    images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]
+
+    fig1, axs1 = pyplot.subplots(3, 3)
+
+    for image in images:
+        image_index = images.index(image)
+        image_px_array = filenameToSmoothedAndScaledpxArray(image)
+
+        harris_corners_image_one = compute_harris_corner(image_px_array,
+                                             n_corner=1000,
+                                             alpha=0.04,
+                                             gaussian_window_size=5,
+                                             plot_image=False)
+        print("We detected {} harris corners on image {}".format(len(harris_corners_image_one), image_index))
+
+        solem_corners = solem.solemCornerDetection(image, False)
+        print("We detected {} solem harris corners on image {}".format(len(solem_corners), image_index))
+
+        naive_corners = naive.naiveDetection(image_px_array, 100, False)
+        print("We detected {} naive corners on image {}".format(len(naive_corners), image_index))
+
+        axs1[image_index][0].set_title('Berg and Loh Harris response Overlaid on Image {}'.format(image_index))
+        axs1[image_index][1].set_title('Solem Harris response Overlaid on Image {}'.format(image_index))
+        axs1[image_index][2].set_title('Naive Harris response Overlaid on Image {}'.format(image_index))
+
+        axs1[image_index][0].imshow(image_px_array, cmap='gray')
+        axs1[image_index][1].imshow(image_px_array, cmap='gray')
+        axs1[image_index][2].imshow(image_px_array, cmap='gray')
+
+        # plot a red point in the center of each image
+        for corner in harris_corners_image_one:
+            circle = Circle((corner.x, corner.y), 2.5, color='r')
+            axs1[image_index][0].add_patch(circle)
+
+        for corner in solem_corners:
+            circle = Circle((corner[1], corner[0]), 2.5, color='r')
+            axs1[image_index][1].add_patch(circle)
+
+        for corner in naive_corners:
+            circle = Circle((corner[0], corner[1]), 2.5, color='r')
+            axs1[image_index][2].add_patch(circle)
+
+    pyplot.show()
+
+
 def extension_compare_alphas():
     left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
 
@@ -164,7 +211,7 @@ def main():
 
 
 if __name__ == "__main__":
-    basic_comparison()
+    # basic_comparison()
+    extension_compare_three_corner_algorithms_on_three_images()
     # extension_compare_alphas()
     # extension_naiveDetection()
-    # solem.solemCornerDetection(OXFORD_LEFT, True)
