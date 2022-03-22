@@ -86,7 +86,7 @@ def basic_comparison():
                                          gaussian_window_size=5,
                                          plot_image=False)
 
-    right_corners = compute_harris_corner(left_px_array,
+    right_corners = compute_harris_corner(right_px_array,
                                          n_corner=1000,
                                          alpha=0.04,
                                          gaussian_window_size=5,
