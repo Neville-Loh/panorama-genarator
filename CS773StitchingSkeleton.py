@@ -177,21 +177,27 @@ def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images = [MOUNTAI
 
     pyplot.show()
 
-
-def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
+def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
     fig1, axs1 = pyplot.subplots(len(images), len(windowsToTest))
+
+    image_corners = []
 
     for image in images:
         image_index = images.index(image)
         image_px_array = filenameToSmoothedAndScaledpxArray(image)
+        window_size_corners = []
 
         for window_size in windowsToTest:
+
+
             window_index = windowsToTest.index(window_size)
             corners = compute_harris_corner(image_px_array,
                                             n_corner=1000,
                                             alpha=0.04,
                                             gaussian_window_size=window_size,
                                             plot_image=False)
+
+            window_size_corners.append([c.cornerness for c in corners])
 
             axs1[image_index][window_index].set_title(
                 'Berg and Loh Harris Response Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size, window_size, image_index))
@@ -202,7 +208,25 @@ def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTA
                 circle = Circle((corner.x, corner.y), 2.5, color='r')
                 axs1[image_index][window_index].add_patch(circle)
 
+        image_corners.append(window_size_corners)
+
     pyplot.show()
+
+    if histogram:
+        fig1, axs1 = pyplot.subplots(len(images), len(windowsToTest), sharey=True, tight_layout=True)
+
+        for image in images:
+            image_index = images.index(image)
+
+            for window_size in windowsToTest:
+                window_index = windowsToTest.index(window_size)
+                axs1[image_index][window_index].hist(x=image_corners[image_index][window_index], bins='auto', color='#0504aa', alpha=0.7, rwidth=0.85)
+                axs1[image_index][window_index].grid(axis='y', alpha=0.75)
+                axs1[image_index][window_index].set_xlabel("Cornerness")
+                axs1[image_index][window_index].set_ylabel("Frequency")
+                axs1[image_index][window_index].set_title('Distribution of Corners Responses for Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size, window_size, image_index))
+        pyplot.show()
+
 
 def extension_thresholds_and_histograms():
     # plot_histogram([c.cornerness for c in corners],
