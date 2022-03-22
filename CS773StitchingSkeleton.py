@@ -11,6 +11,7 @@ import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
 import imageProcessing.naivecornerdetection as naive
+import imageProcessing.SolemHarrisImplementation as solem
 
 # this is a helper function that puts together an RGB image for display in matplotlib, given
 # three color channels for r, g, and b, respectively
@@ -130,3 +131,4 @@ def main():
 if __name__ == "__main__":
     # extension_compare_alphas()
     extension_naiveDetection()
+    solem.solemCornerDetection(OXFORD_LEFT, True)
