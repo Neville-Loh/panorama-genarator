@@ -152,21 +152,28 @@ def extension_compare_three_corner_algorithms_on_two_or_more_images(images = [MO
     pyplot.show()
 
 
-def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
+def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
 
     fig1, axs1 = pyplot.subplots(len(images), 3)
+
+    image_corners = []
 
     for image in images:
         image_index = images.index(image)
         image_px_array = filenameToSmoothedAndScaledpxArray(image)
 
+        alpha_corners = []
+
         for testAlpha in alphasToTest:
+
             alpha_index = alphasToTest.index(testAlpha)
             corners = compute_harris_corner(image_px_array,
                                             n_corner=1000,
                                             alpha=testAlpha,
                                             gaussian_window_size=5,
                                             plot_image=False)
+
+            alpha_corners.append([c.cornerness for c in corners])
 
             axs1[image_index][alpha_index].set_title('Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
             axs1[image_index][alpha_index].imshow(image_px_array, cmap='gray')
@@ -175,7 +182,25 @@ def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images = [MOUNTAI
                 circle = Circle((corner.x, corner.y), 2.5, color='r')
                 axs1[image_index][alpha_index].add_patch(circle)
 
+        image_corners.append(alpha_corners)
+
     pyplot.show()
+
+    if histogram:
+        fig1, axs1 = pyplot.subplots(len(images), len(alphasToTest), sharey=True, tight_layout=True)
+
+        for image in images:
+            image_index = images.index(image)
+
+            for testAlpha in alphasToTest:
+                alpha_index = alphasToTest.index(testAlpha)
+                axs1[image_index][alpha_index].hist(x=image_corners[image_index][alpha_index], bins='auto', color='#0504aa', alpha=0.7, rwidth=0.85)
+                axs1[image_index][alpha_index].grid(axis='y', alpha=0.75)
+                axs1[image_index][alpha_index].set_xlabel("Cornerness")
+                axs1[image_index][alpha_index].set_ylabel("Frequency")
+                axs1[image_index][alpha_index].set_title('Distribution of Corners Responses for Alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
+        pyplot.show()
+
 
 def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
     fig1, axs1 = pyplot.subplots(len(images), len(windowsToTest))
@@ -249,4 +274,4 @@ def main():
     extension_thresholds_and_histograms()
 
 if __name__ == "__main__":
-    extension_compare_window_size()
+    extension_compare_alphas()
