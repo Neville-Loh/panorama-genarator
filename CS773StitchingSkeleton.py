@@ -11,12 +11,8 @@ import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
 import imageProcessing.naivecornerdetection as naive
-import imageProcessing.SolemHarrisImplementation as solem
-
-# this is a helper function that puts together an RGB image for display in matplotlib, given
-# three color channels for r, g, and b, respectively
-from imageProcessing.harris import compute_gaussian_averaging, get_square_and_mixed_derivatives, get_image_cornerness, \
-    get_all_corner, sobel, bruteforce_non_max_suppression, compute_harris_corner
+import imageProcessing.SolemHarrisImplementation as Solem
+from imageProcessing.harris import compute_harris_corner
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
@@ -98,7 +94,6 @@ def basic_comparison():
     axs1[0].imshow(left_px_array, cmap='gray')
     axs1[1].imshow(right_px_array, cmap='gray')
 
-    # plot a red point in the center of each image
     for corner in left_corners:
         circle = Circle((corner.x, corner.y), 3.5, color='r')
         axs1[0].add_patch(circle)
@@ -112,25 +107,23 @@ def basic_comparison():
 
     pyplot.show()
 
-def extension_compare_three_corner_algorithms_on_three_images():
+def extension_compare_three_corner_algorithms_on_two_or_more_images(images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
 
-    images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]
-
-    fig1, axs1 = pyplot.subplots(3, 3)
+    fig1, axs1 = pyplot.subplots(len(images), 3)
 
     for image in images:
         image_index = images.index(image)
         image_px_array = filenameToSmoothedAndScaledpxArray(image)
 
-        harris_corners_image_one = compute_harris_corner(image_px_array,
+        harris_corners_image = compute_harris_corner(image_px_array,
                                              n_corner=1000,
                                              alpha=0.04,
                                              gaussian_window_size=5,
                                              plot_image=False)
-        print("We detected {} harris corners on image {}".format(len(harris_corners_image_one), image_index))
+        print("We detected {} harris corners on image {}".format(len(harris_corners_image), image_index))
 
-        solem_corners = solem.solemCornerDetection(image, False)
-        print("We detected {} solem harris corners on image {}".format(len(solem_corners), image_index))
+        solem_corners = Solem.solemCornerDetection(image, False)
+        print("We detected {} Solem harris corners on image {}".format(len(solem_corners), image_index))
 
         naive_corners = naive.naiveDetection(image_px_array, 100, False)
         print("We detected {} naive corners on image {}".format(len(naive_corners), image_index))
@@ -144,7 +137,7 @@ def extension_compare_three_corner_algorithms_on_three_images():
         axs1[image_index][2].imshow(image_px_array, cmap='gray')
 
         # plot a red point in the center of each image
-        for corner in harris_corners_image_one:
+        for corner in harris_corners_image:
             circle = Circle((corner.x, corner.y), 2.5, color='r')
             axs1[image_index][0].add_patch(circle)
 
@@ -159,25 +152,64 @@ def extension_compare_three_corner_algorithms_on_three_images():
     pyplot.show()
 
 
-def extension_compare_alphas():
-    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
+def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
 
-    alphasToTest = [0.04, 0.05, 0.06]
+    fig1, axs1 = pyplot.subplots(len(images), 3)
 
-    for testAlpha in alphasToTest:
-        corners = compute_harris_corner(left_or_right_px_array,
-                                        n_corner=500,
-                                        alpha=testAlpha,
-                                        gaussian_window_size=5,
-                                        plot_image=True)
+    for image in images:
+        image_index = images.index(image)
+        image_px_array = filenameToSmoothedAndScaledpxArray(image)
 
-        plot_histogram([c.cornerness for c in corners],
-                       "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
+        for testAlpha in alphasToTest:
+            alpha_index = alphasToTest.index(testAlpha)
+            corners = compute_harris_corner(image_px_array,
+                                            n_corner=1000,
+                                            alpha=testAlpha,
+                                            gaussian_window_size=5,
+                                            plot_image=False)
 
-def extension_compare_window_size():
+            axs1[image_index][alpha_index].set_title('Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
+            axs1[image_index][alpha_index].imshow(image_px_array, cmap='gray')
+
+            for corner in corners:
+                circle = Circle((corner.x, corner.y), 2.5, color='r')
+                axs1[image_index][alpha_index].add_patch(circle)
+
+    pyplot.show()
+
+
+def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
+    fig1, axs1 = pyplot.subplots(len(images), 3)
+
+    for image in images:
+        image_index = images.index(image)
+        image_px_array = filenameToSmoothedAndScaledpxArray(image)
+
+        for window_size in windowsToTest:
+            window_index = windowsToTest.index(window_index)
+            corners = compute_harris_corner(image_px_array,
+                                            n_corner=1000,
+                                            alpha=0.04,
+                                            gaussian_window_size=window_size,
+                                            plot_image=False)
+
+
+
+            axs1[image_index][window_index].set_title(
+                'Berg and Loh Harris Response Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size, window_size, image_index))
+            axs1[image_index][window_index].imshow(image_px_array, cmap='gray')
+
+            # plot a red point in the center of each image
+            for corner in corners:
+                circle = Circle((corner.x, corner.y), 2.5, color='r')
+                axs1[image_index][window_index].add_patch(circle)
+
+    pyplot.show()
+
+def extension_thresholds_and_histograms():
+    # plot_histogram([c.cornerness for c in corners],
+    #                "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
     pass
-
-
 
 def extension_naiveDetection():
     left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
@@ -187,36 +219,11 @@ def extension_naiveDetection():
     plot_histogram([c[2] for c in corners],
                    "Distribution of Naieve Corner Values").show()
 
-
-
-
-# This is our code skeleton that performs the stitching
 def main():
-    filename_left_image = MOUNTAIN_LEFT
-    filename_right_image = MOUNTAIN_RIGHT
-    filename_simple_test = MOUNTAIN_SMALL_TEST
-
-    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_SMALL_TEST)
-
-    # Task: Extraction of Harris corners
-    # According to lecture compute Harris corner for both images
-    # Perform a simple non max suppression in a 3x3 neighbour-hood, and report the 1000 strongest corner per image.
-
-    # compute_harris_corner(px_array_left_original,
-    #                       n_corner=5000,
-    #                       alpha=0.05,
-    #                       gaussian_window_size=5,
-    #                       plot_image=True)
-    #
-    # compute_harris_corner(px_array_right_original,
-    #                       n_corner=5000,
-    #                       alpha=0.05,
-    #                       gaussian_window_size=5,
-    #                       plot_image=True)
-
+    basic_comparison()
+    extension_compare_three_corner_algorithms_on_two_or_more_images()
+    extension_compare_alphas()
+    extension_thresholds_and_histograms()
 
 if __name__ == "__main__":
-    # basic_comparison()
-    extension_compare_three_corner_algorithms_on_three_images()
-    # extension_compare_alphas()
-    # extension_naiveDetection()
+    main()
