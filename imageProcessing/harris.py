@@ -30,16 +30,30 @@ class Corner:
         return str(self)
 
 
-def compute_harris_corner(img_original: ImageArray, n_corner: int, alpha: int, gaussian_window_size: int
-                          , plot_image: bool):
+def compute_harris_corner(img_original: List[List[int]],
+                          n_corner: Optional[int] = 5,
+                          alpha: Optional[float] = 0.04,
+                          gaussian_window_size: Optional[int] = 3,
+                          plot_image: Optional[bool] = False) \
+        -> Any:
+    """
+    Compute the harris corner for the picture
+    return the corner activated value in decreasing value
+    optional parameters
+        n_corner: Optional[int], default =5,
+        alpha: Optional[float], default =0.04,
+        gaussian_window_size: Optional[int], default =3,
+        plot_image: Optional[bool], default =False)
+
+    """
+
     # step 1
     np_original = np.array(img_original)
     height, width = np.shape(np_original)
     px_array_left = IPSmooth.computeGaussianAveraging3x3(img_original, width, height)
 
     # Step 2
-    # Implement e.g. Sobel filter in x and y, (The gradiate)  for X and Y derivatives
-
+    # Implement e.g. Sobel filter in x and y, (The gradient)  for X and Y derivatives
     ix, iy = sobel(np_original)
 
     # Step 3
@@ -55,26 +69,26 @@ def compute_harris_corner(img_original: ImageArray, n_corner: int, alpha: int, g
 
     # Choose a Harris constant between 0.04 and 0.06
 
-    # 5 extract Harris corner as (x,y) tuples in a data structure, which is sorted according to the strength of the
+    # 5 extract Harris corners as (x,y) tuples in a data structure, which is sorted according to the strength of the
     # Harris response function C, sorted list of tuples
-    corner_img_array_left = get_image_cornerness(ix2_blur_left, iy2_blur_left, ixiy_blur_left, alpha)
+    corner_img_array = get_image_cornerness(ix2_blur_left, iy2_blur_left, ixiy_blur_left, alpha)
 
     # 5.5 non-max suppression
-    corner_img_array_left = bruteforce_non_max_suppression(corner_img_array_left, window_size=3)
+    corner_img_array = bruteforce_non_max_suppression(corner_img_array, window_size=3)
 
     # 6 Prepare n=1000 strongest conner per image
-    pq_1000_coor_left = [(corner.y, corner.x) for corner in
-                         heapq.nsmallest(n_corner, get_all_corner(corner_img_array_left))]
+    pq_n_best_corner = [(corner.y, corner.x) for corner in
+                         heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
 
     if plot_image:
         plt.figure(figsize=(20, 18))
         plt.gray()
         plt.imshow(img_original)
-        plt.scatter(*zip(*pq_1000_coor_left), s=1, color='r')
+        plt.scatter(*zip(*pq_n_best_corner), s=1, color='r')
         plt.axis('off')
         plt.show()
     else:
-        return pq_1000_coor_left
+        return pq_n_best_corner
 
 
 def sobel(px_array: ImageArray) -> Tuple[ImageArray, ImageArray]:
@@ -103,6 +117,7 @@ def compute_gaussian_averaging(pixel_array: ImageArray, windows_size: Optional[i
     image_height, image_width = np.shape(pixel_array)
     # You can customize GaussianBlur coefficient by: http://dev.theomader.com/gaussian-kernel-calculator
     SAMPLE_KERNEL = [0.1784, 0.210431, 0.222338, 0.210431, 0.1784]
+    
     averaged = IPConv2D.computeSeparableConvolution2DOddNTapBorderZero(
         pixel_array.tolist(), image_width, image_height, SAMPLE_KERNEL)
 
