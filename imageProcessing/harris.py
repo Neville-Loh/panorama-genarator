@@ -1,6 +1,9 @@
 from typing import List, Tuple, Optional, Type, Any
+from matplotlib import pyplot as plt
 import numpy as np
 import heapq
+
+import imageProcessing.smoothing as IPSmooth
 import imageProcessing.utilities as IPUtils
 import imageProcessing.convolve2D as IPConv2D
 
@@ -27,11 +30,59 @@ class Corner:
         return str(self)
 
 
-def sobel(px_array: ImageArray, image_width: int, image_height: int) -> Tuple[ImageArray, ImageArray]:
+def compute_harris_corner(img_original: ImageArray, n_corner: int, alpha: int, gaussian_window_size: int
+                          , plot_image: bool):
+    # step 1
+    np_original = np.array(img_original)
+    height, width = np.shape(np_original)
+    px_array_left = IPSmooth.computeGaussianAveraging3x3(img_original, width, height)
+
+    # Step 2
+    # Implement e.g. Sobel filter in x and y, (The gradiate)  for X and Y derivatives
+
+    ix, iy = sobel(np_original)
+
+    # Step 3
+    # compute the square derivatives and the product of the mixed derivatives, smooth them,
+    # Play with different size of gaussian window (5x5, 7x7, 9x9)
+
+    ix2, iy2, ixiy = t_left = get_square_and_mixed_derivatives(ix, iy)
+
+    # gaussian blur
+    ix2_blur_left, iy2_blur_left, ixiy_blur_left = [compute_gaussian_averaging(img) for img in t_left]
+
+    # axs1[2][3].axis('off')
+
+    # Choose a Harris constant between 0.04 and 0.06
+
+    # 5 extract Harris corner as (x,y) tuples in a data structure, which is sorted according to the strength of the
+    # Harris response function C, sorted list of tuples
+    corner_img_array_left = get_image_cornerness(ix2_blur_left, iy2_blur_left, ixiy_blur_left, alpha)
+
+    # 5.5 non-max suppression
+    corner_img_array_left = bruteforce_non_max_suppression(corner_img_array_left, window_size=3)
+
+    # 6 Prepare n=1000 strongest conner per image
+    pq_1000_coor_left = [(corner.y, corner.x) for corner in
+                         heapq.nsmallest(n_corner, get_all_corner(corner_img_array_left))]
+
+    if plot_image:
+        plt.figure(figsize=(20, 18))
+        plt.gray()
+        plt.imshow(img_original)
+        plt.scatter(*zip(*pq_1000_coor_left), s=1, color='r')
+        plt.axis('off')
+        plt.show()
+    else:
+        return pq_1000_coor_left
+
+
+def sobel(px_array: ImageArray) -> Tuple[ImageArray, ImageArray]:
     """
     Apply sobel filter using 2D convolution
     Returns: image i_x, i_y
     """
+    image_height, image_width = np.shape(px_array)
     ix_kernel = ([-1, 0, 1], [1, 2, 1])
     iy_kernel = ([1, 2, 1], [-1, 0, 1])
 
@@ -48,8 +99,8 @@ def get_square_and_mixed_derivatives(i_x: ImageArray, i_y: ImageArray) -> Tuple[
     return np.square(i_x), np.square(i_y), np.multiply(i_x, i_y)
 
 
-def compute_gaussian_averaging(pixel_array: ImageArray, image_width: int,
-                               image_height: int, windows_size: Optional[int] = 5) -> ImageArray:
+def compute_gaussian_averaging(pixel_array: ImageArray, windows_size: Optional[int] = 5) -> ImageArray:
+    image_height, image_width = np.shape(pixel_array)
     # You can customize GaussianBlur coefficient by: http://dev.theomader.com/gaussian-kernel-calculator
     SAMPLE_KERNEL = [0.1784, 0.210431, 0.222338, 0.210431, 0.1784]
     averaged = IPConv2D.computeSeparableConvolution2DOddNTapBorderZero(
