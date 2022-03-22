@@ -1,8 +1,31 @@
-# A1Skeleton
+# COMPSCI 773 Assignment 1: Berg, N. & Loh, N.
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Github Username</th>
+    <th>Student Number</th>
+  </tr>
+  <tr>
+    <td>Nicholas Berg</td>
+    <td> nber106@aucklanduni.ac.nz </td>
+    <td>50</td>
+    <td>579246262</td>
+  </tr>
+  <tr>
+    <td>Neville Loh</td>
+    <td>nloh108@aucklanduni.ac.nz</td>
+    <td>Neville-Loh</td>
+    <td>737025829</td>
+  </tr>
+</table>
 
 
-Current state:
-![image](https://user-images.githubusercontent.com/48974742/158395702-6bcbdf56-d962-443c-8b33-510009ac585f.png)
+## Current state:
+
+
+![1000 Harris Corners on left and right original images](./results_figures/basic_implementation_output.png)
 
 
 This simple code skeleton is a starting point for the CompSci 773 2022 practical assignment on image stitching. 
