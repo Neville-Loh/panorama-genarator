@@ -120,13 +120,13 @@ def main():
     compute_harris_corner(px_array_left_original,
                           n_corner=5000,
                           alpha=0.05,
-                          gaussian_window_size=3,
+                          gaussian_window_size=5,
                           plot_image=True)
 
     compute_harris_corner(px_array_right_original,
                           n_corner=5000,
                           alpha=0.05,
-                          gaussian_window_size=3,
+                          gaussian_window_size=5,
                           plot_image=True)
 
 
