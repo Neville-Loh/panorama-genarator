@@ -77,7 +77,7 @@ def filenameToSmoothedAndScaledpxArray(filename):
 
 
 def extension_compare_alphas():
-    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_SMALL_TEST)
+    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
 
     alphasToTest = [0.04, 0.05, 0.06]
 
@@ -92,7 +92,7 @@ def extension_compare_alphas():
                        "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
 
 def extension_naiveDetection():
-    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_SMALL_TEST)
+    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
 
     corners = naive.naiveDetection(left_or_right_px_array, 100, True)
 
@@ -128,4 +128,5 @@ def main():
 
 
 if __name__ == "__main__":
+    # extension_compare_alphas()
     extension_naiveDetection()
