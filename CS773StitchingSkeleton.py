@@ -19,6 +19,11 @@ from imageProcessing.harris import compute_gaussian_averaging, get_square_and_mi
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
 MOUNTAIN_RIGHT = "./images/panoramaStitching/tongariro_right_01.png"
+MOUNTAIN_SMALL_TEST = "./images/panoramaStitching/tongariro_left_01_small.png"
+SNOW_LEFT = "./images/panoramaStitching/snow_park_left_berg_loh_02.png"
+SNOW_RIGHT = "./images/panoramaStitching/snow_park_right_berg_loh_02.png"
+OXFORD_LEFT = "./images/panoramaStitching/oxford_left_berg_loh_01.png"
+OXFORD_RIGHT = "./images/panoramaStitching/oxford_right_berg_loh_01.png"
 
 
 def prepareRGBImageFromIndividualArrays(r_pixel_array, g_pixel_array, b_pixel_array, image_width, image_height):
@@ -53,81 +58,52 @@ def pixelArrayToSingleList(pixelArray):
             list_of_pixel_values.append(item)
     return list_of_pixel_values
 
+def filenameToSmoothedAndScaledpxArray(filename):
+    (image_width, image_height, px_array_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(filename)
+
+    start = timer()
+    px_array_smoothed = IPSmooth.computeGaussianAveraging3x3(px_array_original, image_width, image_height)
+    end = timer()
+    print("elapsed time image smoothing: ", end - start)
+
+    start = timer()
+    # make sure greyscale image is stretched to full 8 bit intensity range of 0 to 255
+    px_array_smoothed_scaled = IPPixelOps.scaleTo0And255AndQuantize(px_array_smoothed, image_width, image_height)
+    end = timer()
+    print("elapsed time  image smoothing: ", end - start)
+    return px_array_smoothed_scaled
+
 
 # This is our code skeleton that performs the stitching
 def main():
     filename_left_image = MOUNTAIN_LEFT
     filename_right_image = MOUNTAIN_RIGHT
+    filename_simple_test = MOUNTAIN_SMALL_TEST
 
-    (image_width, image_height, px_array_left_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(
-        filename_left_image)
-    (image_width, image_height, px_array_right_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(
-        filename_right_image)
-
-    start = timer()
-    px_array_left = IPSmooth.computeGaussianAveraging3x3(px_array_left_original, image_width, image_height)
-    px_array_right = IPSmooth.computeGaussianAveraging3x3(px_array_right_original, image_width, image_height)
-    end = timer()
-    print("elapsed time image smoothing: ", end - start)
-
-    # make sure greyscale image is stretched to full 8 bit intensity range of 0 to 255
-    px_array_left = IPPixelOps.scaleTo0And255AndQuantize(px_array_left, image_width, image_height)
-    px_array_right = IPPixelOps.scaleTo0And255AndQuantize(px_array_right, image_width, image_height)
-
-    # plot_histogram(pixelArrayToSingleList(px_array_left)).show()
-    # plot_histogram(pixelArrayToSingleList(px_array_right)).show()
-
-    # # some simplevisualizations
-    #
-    # fig1, axs1 = pyplot.subplots(1, 2)
-    #
-    # axs1[0].set_title('Harris response left overlaid on orig image')
-    # axs1[1].set_title('Harris response right overlaid on orig image')
-    # axs1[0].imshow(px_array_left, cmap='gray')
-    # axs1[1].imshow(px_array_right, cmap='gray')
-    #
-    # # plot a red point in the center of each image
-    # circle = Circle((image_width/2, image_height/2), 3.5, color='r')
-    # axs1[0].add_patch(circle)
-    #
-    # circle = Circle((image_width/2, image_height/2), 3.5, color='r')
-    # axs1[1].add_patch(circle)
-    #
-    # pyplot.show()
-    #
-    # # a combined image including a red matching line as a connection patch artist (from matplotlib)
-    #
-    # matchingImage = prepareMatchingImage(px_array_left, px_array_right, image_width, image_height)
-    #
-    # pyplot.imshow(matchingImage, cmap='gray')
-    # ax = pyplot.gca()
-    # ax.set_title("Matching image")
-    #
-    # pointA = (image_width/2, image_height/2)
-    # pointB = (3*image_width/2, image_height/2)
-    # connection = ConnectionPatch(pointA, pointB, "data", edgecolor='r', linewidth=1)
-    # ax.add_artist(connection)
-    #
-    # pyplot.show()
-
-    end = timer()
-    print("elapsed time image smoothing: ", end - start)
+    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_SMALL_TEST)
 
     # Task: Extraction of Harris corners
     # According to lecture compute Harris corner for both images
     # Perform a simple non max suppression in a 3x3 neighbour-hood, and report the 1000 strongest corner per image.
 
-    compute_harris_corner(px_array_left_original,
+    compute_harris_corner(left_or_right_px_array,
                           n_corner=5000,
                           alpha=0.05,
                           gaussian_window_size=5,
-                          plot_image=True)
+                          plot_image=False)
 
-    compute_harris_corner(px_array_right_original,
-                          n_corner=5000,
-                          alpha=0.05,
-                          gaussian_window_size=5,
-                          plot_image=True)
+
+    # compute_harris_corner(px_array_left_original,
+    #                       n_corner=5000,
+    #                       alpha=0.05,
+    #                       gaussian_window_size=5,
+    #                       plot_image=True)
+    #
+    # compute_harris_corner(px_array_right_original,
+    #                       n_corner=5000,
+    #                       alpha=0.05,
+    #                       gaussian_window_size=5,
+    #                       plot_image=True)
 
 
 if __name__ == "__main__":
