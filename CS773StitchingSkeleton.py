@@ -10,6 +10,7 @@ import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
+import imageProcessing.naivecornerdetection as naive
 
 # this is a helper function that puts together an RGB image for display in matplotlib, given
 # three color channels for r, g, and b, respectively
@@ -90,6 +91,16 @@ def extension_compare_alphas():
         plot_histogram([c.cornerness for c in corners],
                        "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
 
+def extension_naiveDetection():
+    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_SMALL_TEST)
+
+    corners = naive.naiveDetection(left_or_right_px_array, 100, True)
+
+    plot_histogram([c[2] for c in corners],
+                   "Distribution of Naieve Corner Values").show()
+
+
+
 
 # This is our code skeleton that performs the stitching
 def main():
@@ -117,4 +128,4 @@ def main():
 
 
 if __name__ == "__main__":
-    extension_compare_alphas()
+    extension_naiveDetection()
