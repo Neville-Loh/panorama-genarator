@@ -78,14 +78,17 @@ def compute_harris_corner(img_original: List[List[int]],
     corner_img_array = bruteforce_non_max_suppression(corner_img_array, window_size=3)
 
     # 6 Prepare n=1000 strongest conner per image
-    pq_n_best_corner = [(corner.y, corner.x) for corner in
+    pq_n_best_corner = [(corner.y, corner.x, corner.cornerness) for corner in
                          heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
+
+    pq_n_best_corner_coordinates = [(corner.y, corner.x) for corner in
+                        heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
 
     if plot_image:
         plt.figure(figsize=(20, 18))
         plt.gray()
         plt.imshow(img_original)
-        plt.scatter(*zip(*pq_n_best_corner), s=1, color='r')
+        plt.scatter(*zip(*pq_n_best_corner_coordinates), s=1, color='r')
         plt.axis('off')
         plt.show()
     else:

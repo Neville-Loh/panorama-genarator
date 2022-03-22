@@ -59,6 +59,7 @@ def pixelArrayToSingleList(pixelArray):
     return list_of_pixel_values
 
 def filenameToSmoothedAndScaledpxArray(filename):
+
     (image_width, image_height, px_array_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(filename)
 
     start = timer()
@@ -74,6 +75,25 @@ def filenameToSmoothedAndScaledpxArray(filename):
     return px_array_smoothed_scaled
 
 
+def extension_compare_alphas():
+    left_or_right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_SMALL_TEST)
+
+    alphasToTest = [0.04, 0.05, 0.06]
+
+    for testAlpha in alphasToTest:
+        corners = compute_harris_corner(left_or_right_px_array,
+                                        n_corner=500,
+                                        alpha=testAlpha,
+                                        gaussian_window_size=5,
+                                        plot_image=True)
+
+        cornerness = []
+        for i in corners: cornerness.append(i[2])
+
+        plot_histogram(cornerness, "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
+
+
+
 # This is our code skeleton that performs the stitching
 def main():
     filename_left_image = MOUNTAIN_LEFT
@@ -86,11 +106,6 @@ def main():
     # According to lecture compute Harris corner for both images
     # Perform a simple non max suppression in a 3x3 neighbour-hood, and report the 1000 strongest corner per image.
 
-    compute_harris_corner(left_or_right_px_array,
-                          n_corner=5000,
-                          alpha=0.05,
-                          gaussian_window_size=5,
-                          plot_image=False)
 
 
     # compute_harris_corner(px_array_left_original,
@@ -107,4 +122,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    extension_compare_alphas()
