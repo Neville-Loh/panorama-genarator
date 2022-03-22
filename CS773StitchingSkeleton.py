@@ -58,8 +58,8 @@ def pixelArrayToSingleList(pixelArray):
             list_of_pixel_values.append(item)
     return list_of_pixel_values
 
-def filenameToSmoothedAndScaledpxArray(filename):
 
+def filenameToSmoothedAndScaledpxArray(filename):
     (image_width, image_height, px_array_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(filename)
 
     start = timer()
@@ -87,12 +87,8 @@ def extension_compare_alphas():
                                         gaussian_window_size=5,
                                         plot_image=True)
 
-        cornerness = []
-        # for i in corners:
-        #     cornerness.append(i[2])
-        #
-        # plot_histogram(cornerness, "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
-
+        plot_histogram([c.cornerness for c in corners],
+                       "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
 
 
 # This is our code skeleton that performs the stitching
@@ -106,8 +102,6 @@ def main():
     # Task: Extraction of Harris corners
     # According to lecture compute Harris corner for both images
     # Perform a simple non max suppression in a 3x3 neighbour-hood, and report the 1000 strongest corner per image.
-
-
 
     # compute_harris_corner(px_array_left_original,
     #                       n_corner=5000,

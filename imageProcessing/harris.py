@@ -36,7 +36,7 @@ def compute_harris_corner(img_original: List[List[int]],
                           alpha: Optional[float] = 0.04,
                           gaussian_window_size: Optional[int] = 3,
                           plot_image: Optional[bool] = False) \
-        -> Any:
+        -> List[Corner]:
     """
     Compute the harris corner for the picture
     return the corner activated value in decreasing value
@@ -66,7 +66,6 @@ def compute_harris_corner(img_original: List[List[int]],
     # gaussian blur
     ix2_blur_left, iy2_blur_left, ixiy_blur_left = [compute_gaussian_averaging(img, windows_size=gaussian_window_size) for img in t_left]
 
-    # axs1[2][3].axis('off')
 
     # Choose a Harris constant between 0.04 and 0.06
 
@@ -78,22 +77,18 @@ def compute_harris_corner(img_original: List[List[int]],
     corner_img_array = bruteforce_non_max_suppression(corner_img_array, window_size=3)
 
     # 6 Prepare n=1000 strongest conner per image
-    pq_n_best_corner = [(corner.y, corner.x, corner.cornerness) for corner in
-                         heapq.nsmallest(n_corner, get_all_corner(corner_img_array))]
+    pq_n_best_corner = heapq.nsmallest(n_corner, get_all_corner(corner_img_array))
 
-    pq_n_best_corner_coordinates = []
-    for i in pq_n_best_corner:
-        pq_n_best_corner_coordinates.append((i[0], i[1]))
+    pq_n_best_corner_coor = [(corner.y, corner.x) for corner in pq_n_best_corner]
 
     if plot_image:
         plt.figure(figsize=(20, 18))
         plt.gray()
         plt.imshow(img_original)
-        plt.scatter(*zip(*pq_n_best_corner_coordinates), s=1, color='r')
+        plt.scatter(*zip(*pq_n_best_corner_coor), s=1, color='r')
         plt.axis('off')
         plt.show()
-    else:
-        return pq_n_best_corner
+    return pq_n_best_corner
 
 
 def sobel(px_array: ImageArray) -> Tuple[ImageArray, ImageArray]:
@@ -120,8 +115,6 @@ def get_square_and_mixed_derivatives(i_x: ImageArray, i_y: ImageArray) -> Tuple[
 
 def compute_gaussian_averaging(pixel_array: ImageArray, windows_size: Optional[int] = 5) -> ImageArray:
     image_height, image_width = np.shape(pixel_array)
-    # You can customize GaussianBlur coefficient by: http://dev.theomader.com/gaussian-kernel-calculator
-    #SAMPLE_KERNEL = [0.1784, 0.210431, 0.222338, 0.210431, 0.1784]
     kernel = get_gaussian_kernel(windows_size, sigma=1)
     averaged = IPConv2D.computeSeparableConvolution2DOddNTapBorderZero(
         pixel_array.tolist(), image_width, image_height, kernel)
@@ -143,6 +136,7 @@ def get_all_corner(img: ImageArray) -> List[Type[Corner]]:
 
 def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[int] = 3) -> ImageArray:
     height, width = np.shape(input_img)
+    center_window_index = window_size ** 2 // 2
     input_img = input_img.flatten()
 
     # Create window
@@ -155,9 +149,9 @@ def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[
     while window[-1] < len(input_img):
         max_index = np.argmax(input_img[window])
 
-        # suppress non max to 0
-        if max_index != (center_index := (window_size ** 2 // 2)):
-            input_img[center_index] = 0
+        # suppress non max to 0 if nearest neighbour have a higher activation
+        if max_index != center_window_index:
+            input_img[window[center_window_index]] = 0
 
         # shift to next row
         if window[0] + window_size > width * row + width - 1:
