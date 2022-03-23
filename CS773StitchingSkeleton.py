@@ -1,7 +1,9 @@
+import argparse
+
 from matplotlib import pyplot
 from matplotlib.patches import Circle, ConnectionPatch
 import numpy as np
-import heapq
+import sys
 from data_exploration.histograms import plot_histogram
 
 from timeit import default_timer as timer
@@ -73,6 +75,7 @@ def filenameToSmoothedAndScaledpxArray(filename):
     print("elapsed time  image smoothing: ", end - start)
     return px_array_smoothed_scaled
 
+
 def basic_comparison():
     left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
     right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
@@ -80,14 +83,14 @@ def basic_comparison():
     left_corners = compute_harris_corner(left_px_array,
                                          n_corner=1000,
                                          alpha=0.04,
-                                         gaussian_window_size=5,
-                                         plot_image=False)
+                                         gaussian_window_size=3,
+                                         plot_image=True)
 
     right_corners = compute_harris_corner(right_px_array,
-                                         n_corner=1000,
-                                         alpha=0.04,
-                                         gaussian_window_size=5,
-                                         plot_image=False)
+                                          n_corner=1000,
+                                          alpha=0.04,
+                                          gaussian_window_size=5,
+                                          plot_image=True)
 
     fig1, axs1 = pyplot.subplots(1, 2)
     axs1[0].set_title('Harris response left overlaid on orig image')
@@ -108,8 +111,8 @@ def basic_comparison():
 
     pyplot.show()
 
-def extension_compare_three_corner_algorithms_on_two_or_more_images(images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
 
+def extension_compare_three_corner_algorithms_on_two_or_more_images(images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
     fig1, axs1 = pyplot.subplots(len(images), 3, sharey=True)
 
     for image in images:
@@ -117,10 +120,10 @@ def extension_compare_three_corner_algorithms_on_two_or_more_images(images = [MO
         image_px_array = filenameToSmoothedAndScaledpxArray(image)
 
         harris_corners_image = compute_harris_corner(image_px_array,
-                                             n_corner=1000,
-                                             alpha=0.04,
-                                             gaussian_window_size=5,
-                                             plot_image=False)
+                                                     n_corner=1000,
+                                                     alpha=0.04,
+                                                     gaussian_window_size=5,
+                                                     plot_image=False)
         print("We detected {} harris corners on image {}".format(len(harris_corners_image), image_index))
 
         solem_corners = Solem.solemCornerDetection(image, False)
@@ -153,8 +156,8 @@ def extension_compare_three_corner_algorithms_on_two_or_more_images(images = [MO
     pyplot.show()
 
 
-def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
-
+def extension_compare_alphas(alphasToTest=[0.01, 0.05, 0.2], images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT],
+                             histogram=True):
     fig1, axs1 = pyplot.subplots(len(images), 3)
 
     image_corners = []
@@ -176,7 +179,8 @@ def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images=[MOUNTAIN_
 
             alpha_corners.append([c.cornerness for c in corners])
 
-            axs1[image_index][alpha_index].set_title('Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
+            axs1[image_index][alpha_index].set_title(
+                'Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
             axs1[image_index][alpha_index].imshow(image_px_array, cmap='gray')
 
             for corner in corners:
@@ -195,15 +199,19 @@ def extension_compare_alphas(alphasToTest = [0.01, 0.05, 0.2], images=[MOUNTAIN_
 
             for testAlpha in alphasToTest:
                 alpha_index = alphasToTest.index(testAlpha)
-                axs1[image_index][alpha_index].hist(x=image_corners[image_index][alpha_index], bins='auto', color='#0504aa', alpha=0.7, rwidth=0.85)
+                axs1[image_index][alpha_index].hist(x=image_corners[image_index][alpha_index], bins='auto',
+                                                    color='#0504aa', alpha=0.7, rwidth=0.85)
                 axs1[image_index][alpha_index].grid(axis='y', alpha=0.75)
                 axs1[image_index][alpha_index].set_xlabel("Cornerness")
                 axs1[image_index][alpha_index].set_ylabel("Frequency")
-                axs1[image_index][alpha_index].set_title('Distribution of Corners Responses for Alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
+                axs1[image_index][alpha_index].set_title(
+                    'Distribution of Corners Responses for Alpha={} Overlaid on Image {}'.format(testAlpha,
+                                                                                                 image_index))
         pyplot.show()
 
 
-def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
+def extension_compare_window_size(windowsToTest=[3, 5, 7, 9], images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT],
+                                  histogram=True):
     fig1, axs1 = pyplot.subplots(len(images), len(windowsToTest))
 
     image_corners = []
@@ -215,7 +223,6 @@ def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTA
 
         for window_size in windowsToTest:
 
-
             window_index = windowsToTest.index(window_size)
             corners = compute_harris_corner(image_px_array,
                                             n_corner=1000,
@@ -226,7 +233,9 @@ def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTA
             window_size_corners.append([c.cornerness for c in corners])
 
             axs1[image_index][window_index].set_title(
-                'Berg and Loh Harris Response Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size, window_size, image_index))
+                'Berg and Loh Harris Response Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size,
+                                                                                                    window_size,
+                                                                                                    image_index))
             axs1[image_index][window_index].imshow(image_px_array, cmap='gray')
 
             # plot a red point in the center of each image
@@ -246,21 +255,19 @@ def extension_compare_window_size(windowsToTest = [3, 5, 7, 9], images = [MOUNTA
 
             for window_size in windowsToTest:
                 window_index = windowsToTest.index(window_size)
-                axs1[image_index][window_index].hist(x=image_corners[image_index][window_index], bins='auto', color='#0504aa', alpha=0.7, rwidth=0.85)
+                axs1[image_index][window_index].hist(x=image_corners[image_index][window_index], bins='auto',
+                                                     color='#0504aa', alpha=0.7, rwidth=0.85)
                 axs1[image_index][window_index].grid(axis='y', alpha=0.75)
                 axs1[image_index][window_index].set_xlabel("Cornerness")
                 axs1[image_index][window_index].set_ylabel("Frequency")
-                axs1[image_index][window_index].set_title('Distribution of Corners Responses for Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size, window_size, image_index))
+                axs1[image_index][window_index].set_title(
+                    'Distribution of Corners Responses for Gaussian Window as {}x{} Overlaid on Image {}'.format(
+                        window_size, window_size, image_index))
         pyplot.show()
 
 
-def extension_thresholds_and_histograms():
-    # plot_histogram([c.cornerness for c in corners],
-    #                "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
-    pass
-
-
-def extension_distribution_of_distances_between_points(alphasToTest=[0.01, 0.05, 0.2], images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
+def extension_distribution_of_distances_between_points(alphasToTest=[0.01, 0.05, 0.2],
+                                                       images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
     fig1, axs1 = pyplot.subplots(len(images), 3)
 
     image_corners = []
@@ -281,8 +288,6 @@ def extension_distribution_of_distances_between_points(alphasToTest=[0.01, 0.05,
                                             alpha=testAlpha,
                                             gaussian_window_size=5,
                                             plot_image=False)
-
-
 
             axs1[image_index][alpha_index].set_title(
                 'Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
@@ -331,14 +336,47 @@ def extension_naiveDetection():
     plot_histogram([c[2] for c in corners],
                    "Distribution of Naieve Corner Values").show()
 
+
+def h(image_path):
+    left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
+    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
+
+    left_corners = compute_harris_corner(left_px_array,
+                                         n_corner=1000,
+                                         alpha=0.04,
+                                         gaussian_window_size=5,
+                                         plot_image=True)
+
+    right_corners = compute_harris_corner(right_px_array,
+                                          n_corner=1000,
+                                          alpha=0.04,
+                                          gaussian_window_size=5,
+                                          plot_image=True)
+
+
 def main():
-    basic_comparison()
-    extension_compare_three_corner_algorithms_on_two_or_more_images()
-    extension_compare_alphas()
-    extension_compare_window_size()
-    extension_thresholds_and_histograms()
-    extension_distribution_of_distances_between_points()
+    opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
+    args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+
+    if len(args) == 0 and len(opts) ==0:
+        basic_comparison()
+
+    else:
+        parser = argparse.ArgumentParser(description='Description of your program')
+        parser.add_argument('input', metavar='input', type=str)
+        parser.add_argument('-n', '--n_corner', help='How many corner it output ', default=1000)
+        parser.add_argument('-a', '--alpha', help=' alpha constant ', default=0.04)
+        parser.add_argument('-w', '--winsize', help='Description for bar argument', default=5)
+        args = vars(parser.parse_args())
+        print(args)
+        img = filenameToSmoothedAndScaledpxArray(args['input'])
+        compute_harris_corner(img,
+                              n_corner=int(args['n_corner']),
+                              alpha=float(args['alpha']),
+                              gaussian_window_size=int(args['winsize']),
+                              plot_image=True)
+
 
 if __name__ == "__main__":
-    extension_distribution_of_distances_between_points()
-
+    main()
+    # extension_compare_three_corner_algorithms_on_two_or_more_images()
