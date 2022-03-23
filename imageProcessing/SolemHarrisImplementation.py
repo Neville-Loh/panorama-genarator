@@ -69,16 +69,18 @@ def plot_harris_points(image, filtered_coords):
     gray()
     imshow(image)
     plot([p[1] for p in filtered_coords],
-         [p[0] for p in filtered_coords], '*')
+         [p[0] for p in filtered_coords], '.')
     axis('off')
     show()
 
-def main():
-    im = array(Image.open('../images/panoramaStitching/tongariro_left_01.png').convert('L'))
+def solemCornerDetection(image_location, plot=False):
+    im = array(Image.open(image_location).convert('L'))
     harrisim = compute_harris_response(im)
     filtered_coords = get_harris_points(harrisim, 6)
-    plot_harris_points(im, filtered_coords)
+    if plot:
+        plot_harris_points(im, filtered_coords)
+    return filtered_coords
 
 
 if __name__ == "__main__":
-    main()
+    solemCornerDetection("./images/panoramaStitching/oxford_right_berg_loh_01.png")

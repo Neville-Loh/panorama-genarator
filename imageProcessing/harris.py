@@ -15,7 +15,7 @@ ImageArray = np.ndarray
 
 class Corner:
     def __init__(self, index: Tuple[int, int], cornerness: float):
-        self.x, self.y = index
+        self.y, self.x = index
         self.cornerness = cornerness
 
     def __lt__(self, other):
@@ -79,7 +79,7 @@ def compute_harris_corner(img_original: List[List[int]],
     # 6 Prepare n=1000 strongest conner per image
     pq_n_best_corner = heapq.nsmallest(n_corner, get_all_corner(corner_img_array))
 
-    pq_n_best_corner_coor = [(corner.y, corner.x) for corner in pq_n_best_corner]
+    pq_n_best_corner_coor = [(corner.x, corner.y) for corner in pq_n_best_corner]
 
     if plot_image:
         plt.figure(figsize=(20, 18))
