@@ -13,6 +13,7 @@ import imageProcessing.smoothing as IPSmooth
 import imageProcessing.naivecornerdetection as naive
 import imageProcessing.SolemHarrisImplementation as Solem
 from imageProcessing.harris import compute_harris_corner
+from scipy.spatial import distance
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
@@ -109,7 +110,7 @@ def basic_comparison():
 
 def extension_compare_three_corner_algorithms_on_two_or_more_images(images = [MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
 
-    fig1, axs1 = pyplot.subplots(len(images), 3)
+    fig1, axs1 = pyplot.subplots(len(images), 3, sharey=True)
 
     for image in images:
         image_index = images.index(image)
@@ -258,6 +259,70 @@ def extension_thresholds_and_histograms():
     #                "Distribution of Corner Values for alpha={}".format(testAlpha)).show()
     pass
 
+
+def extension_distribution_of_distances_between_points(alphasToTest=[0.01, 0.05, 0.2], images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT], histogram=True):
+    fig1, axs1 = pyplot.subplots(len(images), 3)
+
+    image_corners = []
+
+    for image in images:
+        image_index = images.index(image)
+        image_px_array = filenameToSmoothedAndScaledpxArray(image)
+
+        alpha_corners = []
+
+        for testAlpha in alphasToTest:
+
+            corner_coordinates = []
+
+            alpha_index = alphasToTest.index(testAlpha)
+            corners = compute_harris_corner(image_px_array,
+                                            n_corner=1000,
+                                            alpha=testAlpha,
+                                            gaussian_window_size=5,
+                                            plot_image=False)
+
+
+
+            axs1[image_index][alpha_index].set_title(
+                'Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
+            axs1[image_index][alpha_index].imshow(image_px_array, cmap='gray')
+
+            for corner in corners:
+                circle = Circle((corner.x, corner.y), 2.5, color='r')
+                axs1[image_index][alpha_index].add_patch(circle)
+
+                corner_coordinates.append((corner.x, corner.y))
+
+            alpha_corners.append(corner_coordinates)
+
+        image_corners.append(alpha_corners)
+
+    pyplot.show()
+
+    if histogram:
+        fig1, axs1 = pyplot.subplots(len(images), len(alphasToTest), sharey=True, tight_layout=True)
+
+        for image in images:
+            image_index = images.index(image)
+
+            for testAlpha in alphasToTest:
+                alpha_index = alphasToTest.index(testAlpha)
+
+                coordinates = np.array(image_corners[image_index][alpha_index])
+                distances = distance.pdist(coordinates, 'euclidean')
+
+                axs1[image_index][alpha_index].hist(x=distances, bins='auto',
+                                                    color='#0504aa', alpha=0.7, rwidth=0.85)
+                axs1[image_index][alpha_index].grid(axis='y', alpha=0.75)
+                axs1[image_index][alpha_index].set_xlabel("Distance Between Points")
+                axs1[image_index][alpha_index].set_ylabel("Frequency")
+                axs1[image_index][alpha_index].set_title(
+                    'Distribution of Corners Responses for Alpha={} Overlaid on Image {}'.format(testAlpha,
+                                                                                                 image_index))
+        pyplot.show()
+
+
 def extension_naiveDetection():
     left_or_right_px_array = filenameToSmoothedAndScaledpxArray(OXFORD_LEFT)
 
@@ -272,6 +337,8 @@ def main():
     extension_compare_alphas()
     extension_compare_window_size()
     extension_thresholds_and_histograms()
+    extension_distribution_of_distances_between_points()
 
 if __name__ == "__main__":
-    extension_compare_alphas()
+    extension_compare_three_corner_algorithms_on_two_or_more_images()
+
