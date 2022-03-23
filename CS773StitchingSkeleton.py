@@ -318,7 +318,7 @@ def extension_distribution_of_distances_between_points(alphasToTest=[0.01, 0.05,
                 axs1[image_index][alpha_index].set_xlabel("Distance Between Points")
                 axs1[image_index][alpha_index].set_ylabel("Frequency")
                 axs1[image_index][alpha_index].set_title(
-                    'Distribution of Corners Responses for Alpha={} Overlaid on Image {}'.format(testAlpha,
+                    'Distance between Corners for Alpha={} Overlaid on Image {}'.format(testAlpha,
                                                                                                  image_index))
         pyplot.show()
 
@@ -340,5 +340,5 @@ def main():
     extension_distribution_of_distances_between_points()
 
 if __name__ == "__main__":
-    extension_compare_three_corner_algorithms_on_two_or_more_images()
+    extension_distribution_of_distances_between_points()
 
