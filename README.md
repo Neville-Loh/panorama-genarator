@@ -10,7 +10,7 @@
   <tr>
     <td>Nicholas Berg</td>
     <td> nber106@aucklanduni.ac.nz </td>
-    <td>50</td>
+    <td>133caesium</td>
     <td>579246262</td>
   </tr>
   <tr>
@@ -21,8 +21,29 @@
   </tr>
 </table>
 
+## Requirement
+Python 3.8 or above, for dependancy, please refer to requirement.txt
 
-## Current state:
+## How to run
+
+
+## Linux/Mac
+```
+python3 CS773StitchingSkeleton.py
+
+```
+
+## Windows
+```
+python CS773StitchingSkeleton.py
+
+```
+
+
+
+
+
+## Result:
 
 
 ![1000 Harris Corners on left and right original images](./results_figures/basic_implementation_output.png)
