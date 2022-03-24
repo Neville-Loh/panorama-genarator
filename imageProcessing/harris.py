@@ -8,11 +8,9 @@ from imageProcessing.harris_util import sobel, compute_gaussian_averaging
 
 """
 Harris corner detection
+A generic implementation of Harris Corner detection Algorithm
 
-Based file
 """
-
-
 
 # Default image type is np array.
 ImageArray = np.ndarray

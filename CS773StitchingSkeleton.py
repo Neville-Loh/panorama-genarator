@@ -324,7 +324,7 @@ def extension_distribution_of_distances_between_points(alphasToTest=[0.01, 0.05,
                 axs1[image_index][alpha_index].set_ylabel("Frequency")
                 axs1[image_index][alpha_index].set_title(
                     'Distance between Corners for Alpha={} Overlaid on Image {}'.format(testAlpha,
-                                                                                                 image_index))
+                                                                                        image_index))
         pyplot.show()
 
 
@@ -337,38 +337,45 @@ def extension_naiveDetection():
                    "Distribution of Naieve Corner Values").show()
 
 
-def h(image_path):
-    left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
-    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
-
-    left_corners = compute_harris_corner(left_px_array,
-                                         n_corner=1000,
-                                         alpha=0.04,
-                                         gaussian_window_size=5,
-                                         plot_image=True)
-
-    right_corners = compute_harris_corner(right_px_array,
-                                          n_corner=1000,
-                                          alpha=0.04,
-                                          gaussian_window_size=5,
-                                          plot_image=True)
-
-
 def main():
+    # Retrieve all command line argument
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 
-    if len(args) == 0 and len(opts) ==0:
+    # If there is no argument, compute a basic comparison with default image
+    if len(args) == 0 and len(opts) == 0:
         basic_comparison()
 
+    # Parse all additional argument if there is any
     else:
         parser = argparse.ArgumentParser(description='Description of your program')
+
+        # input image path parameters
         parser.add_argument('input', metavar='input', type=str)
-        parser.add_argument('-n', '--n_corner', help='How many corner it output ', default=1000)
-        parser.add_argument('-a', '--alpha', help=' alpha constant ', default=0.04)
-        parser.add_argument('-w', '--winsize', help='Description for bar argument', default=5)
+
+        # Corner number argument Optional
+        parser.add_argument('-n', '--n_corner',
+                            help='Number of corner output by the algorithm. The output image will contain n corners '
+                                 'with the strongest response. If nothing is supplied, default to 1000',
+                            default=1000)
+
+        # Gaussian windows size argument Optional
+        parser.add_argument('-a', '--alpha',
+                            help='The Harris Response constant alpha. Specifies the weighting between corner with '
+                                 'strong with single direction and multi-direction. A higher alpha will result in '
+                                 'less difference between response of ingle direction and multi-direction shift in '
+                                 'intensity. If nothing is supplied, default to 0.04'
+                            , default=0.04)
+
+        # Gaussian windows size argument, Optional
+        parser.add_argument('-w', '--winsize',
+                            help='Gaussian windows size which applied the the squared and mix derivative of the image.'
+                                 'A higher windows size will result in higher degree of smoothing, If nothing is '
+                                 'supplied, the default widows size is set to 5.',
+                            default=5)
         args = vars(parser.parse_args())
-        print(args)
+
+        # Compute and plot Harris Corner with optional or default values
         img = filenameToSmoothedAndScaledpxArray(args['input'])
         compute_harris_corner(img,
                               n_corner=int(args['n_corner']),
