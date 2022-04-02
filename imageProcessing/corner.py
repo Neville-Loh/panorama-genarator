@@ -22,6 +22,8 @@ class Corner:
     """
     x = None
     y = None
+    feature_descriptor: np.ndarray
+
     cornerness = 0
 
     def __init__(self, index: Tuple[int, int], cornerness: float):
@@ -47,6 +49,9 @@ class Corner:
 
     def __repr__(self):
         return str(self)
+
+
+
 
 
 def get_all_corner(img: ImageArray) -> List[Type[Corner]]:

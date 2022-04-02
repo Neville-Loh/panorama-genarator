@@ -155,3 +155,5 @@ def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[
             window += 1
 
     return input_img.reshape(height, width)
+
+
