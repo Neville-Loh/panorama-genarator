@@ -4,3 +4,4 @@ output/
 *.pyc
 *.xml
 *.iml
+.idea
