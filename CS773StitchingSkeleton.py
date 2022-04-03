@@ -99,16 +99,13 @@ def basic_comparison():
     # axs1[0].imshow(left_px_array, cmap='gray')
     # axs1[1].imshow(right_px_array, cmap='gray')
 
-
-
-
-    left_corners = get_patches(left_corners, 15, 1000, 750, left_px_array)
-    right_corners = get_patches(right_corners, 15, 1000, 750, right_px_array)
+    left_corners = get_patches(left_corners, 15, left_px_array)
+    right_corners = get_patches(right_corners, 15, right_px_array)
 
     pairs = compare(left_corners, right_corners)
 
     matchingImage = prepareMatchingImage(left_px_array, right_px_array, 1000, 750)
-    
+
     pyplot.imshow(matchingImage, cmap='gray')
     ax = pyplot.gca()
     ax.set_title("Matching image")
@@ -116,7 +113,7 @@ def basic_comparison():
     #####
     for pair in pairs:
         pointA = (pair[0].x, pair[0].y)
-        pointB = (pair[1].x+1000, pair[1].y)
+        pointB = (pair[1].x + 1000, pair[1].y)
         connection = ConnectionPatch(pointA, pointB, "data", edgecolor='r', linewidth=1)
         ax.add_artist(connection)
 

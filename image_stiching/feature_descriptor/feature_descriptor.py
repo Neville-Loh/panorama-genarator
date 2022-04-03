@@ -2,12 +2,14 @@ from typing import List, Type, Tuple, Union
 import numpy as np
 from image_stiching.corner import Corner
 from image_stiching.harris_conrner_detection.harris_util import compute_gaussian_averaging
+
 """
 Feature Descriptor
 """
 
-def get_patches(corners: List[Type[Corner]], patch_size: int, width: int, length: int, img: np.ndarray) -> List[
-    Type[Corner]]:
+
+def get_patches(corners: List[Type[Corner]], patch_size: int, img: np.ndarray) -> \
+        List[Type[Corner]]:
     """
     Get the patches from the image
 
@@ -17,10 +19,6 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, width: int, length
         List of corners
     patch_size : int
         Size of the patch
-    width : int
-        Width of the image
-    length : int
-        Length of the image
     img : np.ndarray
         Image
 
@@ -34,17 +32,19 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, width: int, length
     img = compute_gaussian_averaging(img, windows_size=7)
 
     result_corners = []
+    length, width = img.shape
+    print(img[0][:].shape)
     print(f'image shpae = {img.shape}')
     for c in corners:
         # ignore border
-        if c.x < center_index and c.x > width - center_index \
-                and c.y < center_index and c.y > length - center_index:
-            pass
+        if c.x < center_index or c.x > width - center_index \
+                or c.y < center_index or c.y > length - center_index:
+            print(c.x, c.y)
         else:
             # print(type(c.x- center_index))
             # getting the window
             patch: np.ndarray = img[c.y - center_index: c.y + center_index + 1,
-                                c.x - center_index: c.x + center_index + 1]
+                                     c.x - center_index: c.x + center_index + 1]
 
             patch = (patch - np.mean(patch))
 
@@ -97,7 +97,7 @@ def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> List[
     """
     pairs = []
     for c1 in corners1:
-        # initailize the best match
+        # initialize the best match
         first_corner = corners2[0]
         ncc = compute_NCC(c1.feature_descriptor, first_corner.feature_descriptor)
         best = (first_corner, ncc)
