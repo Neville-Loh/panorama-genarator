@@ -5,6 +5,7 @@ from typing import List, Tuple, Optional, Type
 from matplotlib import pyplot as plt
 from image_stiching.corner import Corner, get_all_corner
 from image_stiching.harris_conrner_detection.harris_util import sobel, compute_gaussian_averaging
+from image_stiching.performance_evaulation.util import measure_elapsed_time
 
 """
 Harris corner detection
@@ -16,6 +17,7 @@ A generic implementation of Harris Corner detection Algorithm
 ImageArray = np.ndarray
 
 
+@measure_elapsed_time
 def compute_harris_corner(img_original: List[List[int]],
                           n_corner: Optional[int] = 5,
                           alpha: Optional[float] = 0.04,
@@ -155,5 +157,3 @@ def bruteforce_non_max_suppression(input_img: ImageArray, window_size: Optional[
             window += 1
 
     return input_img.reshape(height, width)
-
-

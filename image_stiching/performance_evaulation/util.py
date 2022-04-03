@@ -2,7 +2,7 @@ from functools import wraps
 from time import time
 
 
-def timeit(f):
+def measure_elapsed_time(f):
     """
     Decorator to print the execution time of a function
     Parameters

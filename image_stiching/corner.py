@@ -24,6 +24,7 @@ class Corner:
     y: int = None
     feature_descriptor: np.ndarray = None
     cornerness: float = 0.0
+    patch_mse: float = 0.0
 
     def __init__(self, index: Tuple[int, int], cornerness: float):
         """Class Constructor
