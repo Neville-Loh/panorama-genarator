@@ -2,6 +2,7 @@ from typing import List, Type, Tuple, Union
 import numpy as np
 from image_stiching.corner import Corner
 from image_stiching.harris_conrner_detection.harris_util import compute_gaussian_averaging
+from image_stiching.performance_evaulation.util import timeit
 
 """
 Feature Descriptor
@@ -33,18 +34,14 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, img: np.ndarray) -
 
     result_corners = []
     length, width = img.shape
-    print(img[0][:].shape)
-    print(f'image shpae = {img.shape}')
     for c in corners:
         # ignore border
-        if c.x < center_index or c.x > width - center_index \
-                or c.y < center_index or c.y > length - center_index:
-            print(c.x, c.y)
-        else:
-            # print(type(c.x- center_index))
+        if not (c.x < center_index or c.x >= width - center_index
+                or c.y < center_index or c.y >= length - center_index):
+
             # getting the window
             patch: np.ndarray = img[c.y - center_index: c.y + center_index + 1,
-                                     c.x - center_index: c.x + center_index + 1]
+                                c.x - center_index: c.x + center_index + 1]
 
             patch = (patch - np.mean(patch))
 
