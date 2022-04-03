@@ -46,10 +46,12 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, img: np.ndarray) -
             patch: np.ndarray = img[c.y - center_index: c.y + center_index + 1,
                                 c.x - center_index: c.x + center_index + 1]
 
+            # pre-compute the mean and standard deviation
             patch = (patch - np.mean(patch))
 
             # setting the result
             c.feature_descriptor = patch
+            c.patch_mse = np.sqrt(np.sum(patch ** 2))
 
             if patch.shape != (15, 15):
                 print(f'x = {c.x},y={c.y}, shape={patch.shape}')
@@ -60,29 +62,30 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, img: np.ndarray) -
     return result_corners
 
 
-def compute_ncc(patch1: np.ndarray, patch2: np.ndarray) -> float:
+def compute_ncc(c1: Type[Corner], c2: Type[Corner]) -> float:
     """
     Compute the normalised cross correlation between two patches.
 
     parameters
     ----------
-    patch1 : np.ndarray
-        the patch of the corner from the first image
-    patch2 : np.ndarray
-        the patch of the corner from the second image
-
+    c1 : Type[Corner]
+        First corner
+    c2 : Type[Corner]
+        Second corner
     Returns
     -------
         float, the normalised cross correlation. The higher the value the better it correlates.
     """
     # compute the normalised cross correlation
-    return np.sum(patch1 * patch2) / (np.sqrt(np.sum(patch1 ** 2)) * np.sqrt(np.sum(patch2 ** 2)))
+    return np.sum(c1.feature_descriptor * c2.feature_descriptor) / (c1.patch_mse * c2.patch_mse)
 
 
+@measure_elapsed_time
 def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> \
         List[Tuple[Type[Corner], Type[Corner], float]]:
     """
     compare the two list of corners, and return the best matches.
+    O(n^2) complexity. Brute force implementation.
 
     Parameters
     ----------
@@ -100,11 +103,11 @@ def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> \
     for c1 in corners1:
         # initialize the best match
         first_corner = corners2[0]
-        ncc = compute_ncc(c1.feature_descriptor, first_corner.feature_descriptor)
+        ncc = compute_ncc(c1, first_corner)
         best = (first_corner, ncc)
         best2 = (first_corner, ncc)
         for c2 in corners2[1:]:
-            result = compute_ncc(c1.feature_descriptor, c2.feature_descriptor)
+            result = compute_ncc(c1, c2)
 
             # check if result greater than 2nd best, if yes, replace 2nd best
             if result > best[1]:

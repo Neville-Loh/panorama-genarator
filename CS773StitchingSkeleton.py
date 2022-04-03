@@ -94,7 +94,6 @@ def basic_comparison():
     right_corners = get_patches(right_corners, 15, right_px_array)
 
     pairs = compare(left_corners, right_corners)
-
     matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
 
     pyplot.imshow(matching_image, cmap='gray')
