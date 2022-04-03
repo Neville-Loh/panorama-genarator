@@ -47,6 +47,7 @@ def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image
 
     return matchingImage
 
+
 def pixelArrayToSingleList(pixelArray):
     list_of_pixel_values = []
     for row in pixelArray:
@@ -70,9 +71,12 @@ def filenameToSmoothedAndScaledpxArray(filename):
     print("elapsed time  image smoothing: ", end - start)
     return px_array_smoothed_scaled
 
+
 def basic_comparison():
     left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
     right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
+
+    height, width = len(left_px_array), len(left_px_array[0])
 
     left_corners = compute_harris_corner(left_px_array,
                                          n_corner=1000,
@@ -86,31 +90,26 @@ def basic_comparison():
                                           gaussian_window_size=5,
                                           plot_image=False)
 
-    # fig1, axs1 = pyplot.subplots(1, 2)
-    # axs1[0].set_title('Harris response left overlaid on orig image')
-    # axs1[1].set_title('Harris response right overlaid on orig image')
-    # axs1[0].imshow(left_px_array, cmap='gray')
-    # axs1[1].imshow(right_px_array, cmap='gray')
-
     left_corners = get_patches(left_corners, 15, left_px_array)
     right_corners = get_patches(right_corners, 15, right_px_array)
 
     pairs = compare(left_corners, right_corners)
 
-    matchingImage = prepareMatchingImage(left_px_array, right_px_array, 1000, 750)
+    matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
 
-    pyplot.imshow(matchingImage, cmap='gray')
+    pyplot.imshow(matching_image, cmap='gray')
     ax = pyplot.gca()
     ax.set_title("Matching image")
 
     #####
     for pair in pairs:
-        pointA = (pair[0].x, pair[0].y)
-        pointB = (pair[1].x + 1000, pair[1].y)
-        connection = ConnectionPatch(pointA, pointB, "data", edgecolor='r', linewidth=1)
+        point_a = (pair[0].x, pair[0].y)
+        point_b = (pair[1].x + width, pair[1].y)
+        connection = ConnectionPatch(point_a, point_b, "data", edgecolor='r', linewidth=1)
         ax.add_artist(connection)
 
     pyplot.show()
+
 
 def main():
     # Retrieve all command line argument
