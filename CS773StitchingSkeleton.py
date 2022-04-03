@@ -13,8 +13,9 @@ import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
 import imageProcessing.naivecornerdetection as naive
-import imageProcessing.SolemHarrisImplementation as Solem
-from imageProcessing.harris import compute_harris_corner
+import image_stiching.harris_conrner_detection.SolemHarrisImplementation as Solem
+from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
+from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 from scipy.spatial import distance
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
@@ -84,32 +85,55 @@ def basic_comparison():
                                          n_corner=1000,
                                          alpha=0.04,
                                          gaussian_window_size=3,
-                                         plot_image=True)
+                                         plot_image=False)
 
     right_corners = compute_harris_corner(right_px_array,
                                           n_corner=1000,
                                           alpha=0.04,
                                           gaussian_window_size=5,
-                                          plot_image=True)
+                                          plot_image=False)
 
-    fig1, axs1 = pyplot.subplots(1, 2)
-    axs1[0].set_title('Harris response left overlaid on orig image')
-    axs1[1].set_title('Harris response right overlaid on orig image')
-    axs1[0].imshow(left_px_array, cmap='gray')
-    axs1[1].imshow(right_px_array, cmap='gray')
+    # fig1, axs1 = pyplot.subplots(1, 2)
+    # axs1[0].set_title('Harris response left overlaid on orig image')
+    # axs1[1].set_title('Harris response right overlaid on orig image')
+    # axs1[0].imshow(left_px_array, cmap='gray')
+    # axs1[1].imshow(right_px_array, cmap='gray')
 
-    for corner in left_corners:
-        circle = Circle((corner.x, corner.y), 3.5, color='r')
-        axs1[0].add_patch(circle)
 
-    for corner in right_corners:
-        circle = Circle((corner.x, corner.y), 3.5, color='r')
-        axs1[1].add_patch(circle)
 
-    print("We plotted {} corners on the left image".format(len(left_corners)))
-    print("We plotted {} corners on the right image".format(len(right_corners)))
+
+    left_corners = get_patches(left_corners, 15, 1000, 750, left_px_array)
+    right_corners = get_patches(right_corners, 15, 1000, 750, right_px_array)
+
+    pairs = compare(left_corners, right_corners)
+
+    matchingImage = prepareMatchingImage(left_px_array, right_px_array, 1000, 750)
+    
+    pyplot.imshow(matchingImage, cmap='gray')
+    ax = pyplot.gca()
+    ax.set_title("Matching image")
+
+    #####
+    for pair in pairs:
+        pointA = (pair[0].x, pair[0].y)
+        pointB = (pair[1].x+1000, pair[1].y)
+        connection = ConnectionPatch(pointA, pointB, "data", edgecolor='r', linewidth=1)
+        ax.add_artist(connection)
 
     pyplot.show()
+
+    # for corner in left_corners:
+    #     circle = Circle((corner.x, corner.y), 3.5, color='r')
+    #     axs1[0].add_patch(circle)
+    #
+    # for corner in right_corners:
+    #     circle = Circle((corner.x, corner.y), 3.5, color='r')
+    #     axs1[1].add_patch(circle)
+    #
+    # print("We plotted {} corners on the left image".format(len(left_corners)))
+    # print("We plotted {} corners on the right image".format(len(right_corners)))
+    #
+    # pyplot.show()
 
 
 def extension_compare_three_corner_algorithms_on_two_or_more_images(images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
