@@ -3,8 +3,8 @@ import heapq
 import imageProcessing.smoothing as IPSmooth
 from typing import List, Tuple, Optional, Type
 from matplotlib import pyplot as plt
-from imageProcessing.corner import Corner, get_all_corner
-from imageProcessing.harris_util import sobel, compute_gaussian_averaging
+from image_stiching.corner import Corner, get_all_corner
+from image_stiching.harris_conrner_detection.harris_util import sobel, compute_gaussian_averaging
 
 """
 Harris corner detection

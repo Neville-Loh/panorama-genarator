@@ -1,6 +1,6 @@
 from typing import List, Type
 import numpy as np
-from imageProcessing.corner import Corner
+from image_stiching.corner import Corner
 
 
 def get_patches(corners: List[Type[Corner]], patch_size: int, width: int, length: int, img: np.ndarray):
@@ -22,6 +22,8 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, width: int, length
 
             # setting the result
             c.feature_descriptor = patch
+
+
             if patch.shape != (15, 15):
                 print(f'x = {c.x},y={c.y}, shape={patch.shape}')
             else:
@@ -42,11 +44,13 @@ def compute_NCC(patch1, patch2):
 def compare( corners1: List[Type[Corner]],corners2: List[Type[Corner]]):
     pairs = []
     for c1 in corners1:
-        best = (corners2[0], -999999999)
-        best2 = (corners2[0], -999999999)
+        best = (corners2[0], -999999999) # 10
+        best2 = (corners2[0], -999999999) # 5
 
         for c2 in corners2:
-            result = compute_NCC(c1.feature_descriptor,c2.feature_descriptor)
+            result = compute_NCC(c1.feature_descriptor, c2.feature_descriptor)
+
+            # check if result greater than 2nd best, if yes, replace 2nd best
             if result > best[1]:
                 best2 = best
                 best = (c2, result)

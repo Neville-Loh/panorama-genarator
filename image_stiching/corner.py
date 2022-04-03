@@ -20,11 +20,10 @@ class Corner:
     """Class Corner
         Represent a corner in the image
     """
-    x = None
-    y = None
+    x: int = None
+    y: int = None
     feature_descriptor: np.ndarray
-
-    cornerness = 0
+    cornerness: float = 0
 
     def __init__(self, index: Tuple[int, int], cornerness: float):
         """Class Constructor

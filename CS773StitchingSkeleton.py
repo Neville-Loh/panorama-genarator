@@ -13,9 +13,9 @@ import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
 import imageProcessing.naivecornerdetection as naive
-import imageProcessing.SolemHarrisImplementation as Solem
-from imageProcessing.feature_descriptor.feature_descriptor import get_patches, compare
-from imageProcessing.harris import compute_harris_corner
+import image_stiching.harris_conrner_detection.SolemHarrisImplementation as Solem
+from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
+from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 from scipy.spatial import distance
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
