@@ -1,5 +1,6 @@
 import argparse
 
+import numpy as np
 from matplotlib import pyplot
 from matplotlib.patches import ConnectionPatch
 import sys
@@ -10,6 +11,8 @@ import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
+from data_exploration.histograms import plot_histogram
+from data_exploration.util import slope, reject_outliers, reject_pair_outliers
 from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 
@@ -94,13 +97,47 @@ def basic_comparison():
     right_corners = get_patches(right_corners, 15, right_px_array)
 
     pairs = compare(left_corners, right_corners)
-    matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
 
+    slops = []
+    s = []
+    for pair in pairs:
+        sl = slope(pair[0].x, pair[0].y, pair[1].x + width, pair[1].y)
+        s.append(sl)
+        slops.append((pair[0], pair[1], sl))
+        print(sl)
+
+    fig1, ax1 = pyplot.subplots(1, 2)
+    ax1[0].set_title('Before rejection')
+    ax1[0].boxplot(s)
+    # pyplot.show()
+
+    s = reject_outliers(np.array(s))
+
+    ax1[1].set_title('After rejection')
+    ax1[1].boxplot(s)
+    pyplot.show()
+
+    matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
     pyplot.imshow(matching_image, cmap='gray')
     ax = pyplot.gca()
     ax.set_title("Matching image")
 
-    #####
+
+    for pair in pairs:
+        point_a = (pair[0].x, pair[0].y)
+        point_b = (pair[1].x + width, pair[1].y)
+        connection = ConnectionPatch(point_a, point_b, "data", edgecolor='r', linewidth=1)
+        ax.add_artist(connection)
+
+    pyplot.show()
+
+    matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
+    pyplot.imshow(matching_image, cmap='gray')
+    ax = pyplot.gca()
+    ax.set_title("Matching image")
+
+    pairs = reject_pair_outliers(slops, s)
+    print(len(pairs))
     for pair in pairs:
         point_a = (pair[0].x, pair[0].y)
         point_b = (pair[1].x + width, pair[1].y)
