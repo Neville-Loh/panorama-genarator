@@ -7,10 +7,11 @@ import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.smoothing as IPSmooth
 from data_exploration.image_plot import plot_side_by_side_pairs
-from data_exploration.util import slope, reject_outliers, reject_pair_outliers
-from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
+from data_exploration.util import reject_outliers, reject_pair_outliers
+from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare_all_ncc, match_corner_by_ncc, \
+    reject_outlier_pairs
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
-from image_stiching.performance_evaulation.util import measure_elapsed_time
+from image_stiching.performance_evaulation.timer import measure_elapsed_time
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
@@ -72,31 +73,25 @@ def basic_comparison():
                                           gaussian_window_size=7,
                                           plot_image=False)
 
-    left_corners = get_patches(left_corners, 15, left_px_array)
-    right_corners = get_patches(right_corners, 15, right_px_array)
+    # get the best matches for each corner in the left image
+    pairs = match_corner_by_ncc((left_px_array, left_corners),
+                                (right_px_array, right_corners),
+                                feature_descriptor_path_size=15,
+                                threshold=0.9)
 
-    pairs = compare(left_corners, right_corners)
-
-    slops = []
-    s = []
-    for pair in pairs:
-        sl = slope(pair[0].x, pair[0].y, pair[1].x + width, pair[1].y)
-        s.append(sl)
-        slops.append((pair[0], pair[1], sl))
-
+    slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
     fig1, ax1 = pyplot.subplots(1, 2)
     ax1[0].set_title('Before rejection')
-    ax1[0].boxplot(s)
-    # pyplot.show()
+    ax1[0].boxplot(slope)
 
-    s = reject_outliers(np.array(s))
+    s = reject_outliers(np.array(slope))
     ax1[1].set_title('After rejection')
     ax1[1].boxplot(s)
     pyplot.show()
 
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection")
     print(f'len of pairs before = {len(pairs)}')
-    pairs = reject_pair_outliers(slops, s)
+    pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
     print(f'len of pairs after = {len(pairs)}')
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
 

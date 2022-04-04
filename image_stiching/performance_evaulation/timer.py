@@ -1,6 +1,11 @@
 from functools import wraps
 from time import time
 
+"""
+Utility package to measure the time of a function.
+@Author: Neville Loh
+"""
+
 
 def measure_elapsed_time(f):
     """
@@ -13,6 +18,7 @@ def measure_elapsed_time(f):
     -------
         function wrapper
     """
+
     @wraps(f)
     def wrap(*args, **kw):
         ts = time()

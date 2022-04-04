@@ -55,19 +55,20 @@ class Corner:
         return str(self)
 
 
-def get_all_corner(img: ImageArray) -> List[Type[Corner]]:
+def get_all_corner_from_response(corner_response: ImageArray) -> List[Type[Corner]]:
     """
     Get all corner in the image
     Parameters
     ----------
-    img : np.ndarray
-        input image
+    corner_response : np.ndarray
+        Harris Response which contains the intensity of how the pixel represent a corner, where the location
+        maps to the pixel index.
     Returns
     -------
     List[Type[Corner]]
-        List of all corner in the image
+        Min heap of all corner in the image, sorted by the corner response.
     """
     pq = []
-    for index, val in np.ndenumerate(img):
+    for index, val in np.ndenumerate(corner_response):
         heapq.heappush(pq, Corner(index, val))
     return pq
