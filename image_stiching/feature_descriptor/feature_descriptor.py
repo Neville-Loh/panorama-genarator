@@ -1,8 +1,9 @@
-from typing import List, Type, Tuple, Union
+from typing import List, Type, Tuple, Optional
 import numpy as np
 from image_stiching.corner import Corner
 from image_stiching.harris_conrner_detection.harris_util import compute_gaussian_averaging
-from image_stiching.performance_evaulation.util import measure_elapsed_time
+from image_stiching.pair import Pair
+from image_stiching.performance_evaulation.timer import measure_elapsed_time
 
 """
 Feature Descriptor is a class that is used to compute the feature descriptor of a local zones.
@@ -10,8 +11,43 @@ Feature Descriptor is a class that is used to compute the feature descriptor of 
 @Author Neville Loh
 """
 
+ImageArray = np.ndarray
 
-def get_patches(corners: List[Type[Corner]], patch_size: int, img: np.ndarray) -> \
+@measure_elapsed_time
+def match_corner_by_ncc(image_data_1: Tuple[ImageArray, List[Type[Corner]]],
+                        image_data_2: Tuple[ImageArray, List[Type[Corner]]],
+                        feature_descriptor_path_size: Optional[int] = 15,
+                        threshold: Optional[float] = 0.85) -> \
+        List[Type[Pair]]:
+    """
+    Match the feature descriptors of the corners.
+
+    Parameters
+    ----------
+    image_data_1 : Tuple[ImageArray, List[Type[Corner]]]
+        Tuple of the image and the list of corners
+    image_data_2 : Tuple[ImageArray, List[Type[Corner]]]
+        Tuple of the image and the list of corners
+    feature_descriptor_path_size : Optional[int]
+        Size of the patch of normalized cross correlation
+    threshold : Optional[float]
+        Threshold ratio for the best match and the second-best match.
+
+    Returns
+    -------
+        List[Tuple[Type[Corner], Type[Corner]]] : List of matched corners
+    """
+    left_px_array, left_corners = image_data_1
+    right_px_array, right_corners = image_data_2
+
+    left_corners = get_patches(left_corners, left_px_array, feature_descriptor_path_size)
+    right_corners = get_patches(right_corners, right_px_array, feature_descriptor_path_size)
+    pairs = compare_all_ncc(left_corners, right_corners, threshold)
+
+    return pairs
+
+
+def get_patches(corners: List[Type[Corner]], img: np.ndarray, patch_size: int) -> \
         List[Type[Corner]]:
     """
     Get the patches from the image
@@ -83,8 +119,8 @@ def compute_ncc(c1: Type[Corner], c2: Type[Corner]) -> float:
 
 
 @measure_elapsed_time
-def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> \
-        List[Tuple[Type[Corner], Type[Corner], float]]:
+def compare_all_ncc(corners1: List[Type[Corner]], corners2: List[Type[Corner]], threshold: float) -> \
+        List[Type[Pair]]:
     """
     compare the two list of corners, and return the best matches.
     O(n^2) complexity. Brute force implementation.
@@ -95,6 +131,8 @@ def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> \
         List of corners retrieved from the first image
     corners2 : List[Type[Corner]]
         List of corners retrieved from the second image
+    threshold : float
+        Threshold ratio for the best match and the second best match
 
     Returns
     -------
@@ -121,7 +159,31 @@ def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> \
 
         # check ratio between 2nd best match and best
         ratio = best2[1] / best[1]
-        if ratio <= 0.85:
-            pairs.append((c1, best[0], best[1]))
+        if ratio <= threshold:
+            pairs.append(Pair(c1, best[0], best[1]))
 
     return pairs
+
+
+def reject_outlier_pairs(pairs: List[Type[Pair]], m=2) -> List[Type[Pair]]:
+    """
+    Reject outliers from the data.
+
+    Parameters
+    ----------
+    pairs : List[Type[Pair]]
+        List of pairs
+    m : int
+        Number of standard deviations to reject
+
+    Returns
+    -------
+        List[float]
+            List of data without outliers
+    """
+    pairs = np.array(pairs)
+    slopes = [pair.gradient for pair in pairs]
+    mean = np.mean(slopes)
+    std = np.std(slopes)
+    i = np.array([abs(pair.gradient - mean) < m * std for pair in pairs])
+    return pairs[i]

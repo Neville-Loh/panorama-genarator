@@ -3,9 +3,9 @@ import heapq
 import imageProcessing.smoothing as IPSmooth
 from typing import List, Tuple, Optional, Type
 from matplotlib import pyplot as plt
-from image_stiching.corner import Corner, get_all_corner
+from image_stiching.corner import Corner, get_all_corner_from_response
 from image_stiching.harris_conrner_detection.harris_util import sobel, compute_gaussian_averaging
-from image_stiching.performance_evaulation.util import measure_elapsed_time
+from image_stiching.performance_evaulation.timer import measure_elapsed_time
 
 """
 Harris corner detection
@@ -58,7 +58,7 @@ def compute_harris_corner(img_original: List[List[int]],
     corner_img_array = bruteforce_non_max_suppression(corner_img_array, window_size=3)
 
     # Prepare n=1000 strongest conner per image
-    pq_n_best_corner = heapq.nsmallest(n_corner, get_all_corner(corner_img_array))
+    pq_n_best_corner = heapq.nsmallest(n_corner, get_all_corner_from_response(corner_img_array))
 
     # Plot the image if optional argument plot_image is true
     if plot_image:

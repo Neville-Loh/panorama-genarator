@@ -14,7 +14,7 @@ import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
 import imageProcessing.naivecornerdetection as naive
 import image_stiching.harris_conrner_detection.SolemHarrisImplementation as Solem
-from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
+from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare_all_ncc
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 from scipy.spatial import distance
 
