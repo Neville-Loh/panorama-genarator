@@ -84,7 +84,7 @@ def extension_compare_alphas(alphasToTest=[0.01, 0.05, 0.2], images=[MOUNTAIN_LE
                                             gaussian_window_size=5,
                                             plot_image=False)
 
-            alpha_corners.append([c.cornerness for c in corners])
+            alpha_corners.append([c.corner_response for c in corners])
 
             axs1[image_index][alpha_index].set_title(
                 'Berg and Loh Harris Response with alpha={} Overlaid on Image {}'.format(testAlpha, image_index))
@@ -137,7 +137,7 @@ def extension_compare_window_size(windowsToTest=[3, 5, 7, 9], images=[MOUNTAIN_L
                                             gaussian_window_size=window_size,
                                             plot_image=False)
 
-            window_size_corners.append([c.cornerness for c in corners])
+            window_size_corners.append([c.corner_response for c in corners])
 
             axs1[image_index][window_index].set_title(
                 'Berg and Loh Harris Response Gaussian Window as {}x{} Overlaid on Image {}'.format(window_size,

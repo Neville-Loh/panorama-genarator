@@ -23,7 +23,7 @@ class Corner:
     x: int = None
     y: int = None
     feature_descriptor: np.ndarray = None
-    cornerness: float = 0.0
+    corner_response: float = 0.0
     patch_mse: float = 0.0
 
     def __init__(self, index: Tuple[int, int], cornerness: float):
@@ -36,16 +36,16 @@ class Corner:
             Harris Response which contains the intensity of how the pixel represent a corner
         """
         self.y, self.x = index
-        self.cornerness = cornerness
+        self.corner_response = cornerness
 
     def __lt__(self, other):
-        return self.cornerness > other.cornerness
+        return self.corner_response > other.corner_response
 
     def __eq__(self, other):
-        return self.cornerness == other.cornerness
+        return self.corner_response == other.corner_response
 
     def __str__(self) -> str:
-        return str((self.x, self.y, self.cornerness))
+        return str((self.x, self.y, self.corner_response))
 
     def __repr__(self):
         return str(self)
