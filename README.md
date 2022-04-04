@@ -46,7 +46,6 @@ python CS773StitchingSkeleton.py
 ## Result:
 
 
-![1000 Harris Corners on left and right original images](./results_figures/basic_implementation_output.png)
 
 
 ![The outputs of our 3 corner finding implementations on 3 different images](./results_figures/3x3%20Corner%20and%20Image%20Comparisons.png)
