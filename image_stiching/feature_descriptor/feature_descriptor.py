@@ -13,6 +13,7 @@ Feature Descriptor is a class that is used to compute the feature descriptor of 
 
 ImageArray = np.ndarray
 
+
 @measure_elapsed_time
 def match_corner_by_ncc(image_data_1: Tuple[ImageArray, List[Type[Corner]]],
                         image_data_2: Tuple[ImageArray, List[Type[Corner]]],
@@ -165,7 +166,8 @@ def compare_all_ncc(corners1: List[Type[Corner]], corners2: List[Type[Corner]], 
     return pairs
 
 
-def reject_outlier_pairs(pairs: List[Type[Pair]], m=2) -> List[Type[Pair]]:
+def reject_outlier_pairs(pairs: List[Type[Pair]], m: Optional[float] = 2, width_offset: Optional[int] = 0) \
+        -> List[Type[Pair]]:
     """
     Reject outliers from the data.
 
@@ -175,15 +177,30 @@ def reject_outlier_pairs(pairs: List[Type[Pair]], m=2) -> List[Type[Pair]]:
         List of pairs
     m : int
         Number of standard deviations to reject
+    width_offset : int
+        Offset to the width of the image
 
     Returns
     -------
         List[float]
             List of data without outliers
     """
+
+    # gradient outlier detection
     pairs = np.array(pairs)
-    slopes = [pair.gradient for pair in pairs]
+    slopes = [pair.cal_gradient(width_offset=width_offset) for pair in pairs]
     mean = np.mean(slopes)
     std = np.std(slopes)
-    i = np.array([abs(pair.gradient - mean) < m * std for pair in pairs])
-    return pairs[i]
+    i = np.array([abs(pair.cal_gradient(width_offset=width_offset) - mean) < m * std for pair in pairs])
+    pairs = pairs[i]
+    print(len(pairs))
+
+    # distance outlier detection
+    distances = [pair.distance for pair in pairs]
+    mean = np.mean(distances)
+    std = np.std(distances)
+    i = np.array([abs(pair.distance - mean) < m * std for pair in pairs])
+    pairs = pairs[i]
+    print(len(pairs))
+
+    return pairs

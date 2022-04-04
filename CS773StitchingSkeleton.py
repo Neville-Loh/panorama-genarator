@@ -7,7 +7,7 @@ import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.smoothing as IPSmooth
 from data_exploration.image_plot import plot_side_by_side_pairs
-from data_exploration.util import slope, reject_outliers, reject_pair_outliers
+from data_exploration.util import reject_outliers, reject_pair_outliers
 from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare_all_ncc, match_corner_by_ncc, \
     reject_outlier_pairs
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
@@ -79,7 +79,7 @@ def basic_comparison():
                                 feature_descriptor_path_size=15,
                                 threshold=0.85)
 
-    slope = [pair.gradient for pair in pairs]
+    slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
     fig1, ax1 = pyplot.subplots(1, 2)
     ax1[0].set_title('Before rejection')
     ax1[0].boxplot(slope)
@@ -91,7 +91,8 @@ def basic_comparison():
 
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection")
     print(f'len of pairs before = {len(pairs)}')
-    pairs = reject_outlier_pairs(pairs)
+    pairs = reject_outlier_pairs(pairs, width_offset=width)
+    print(pairs)
     print(f'len of pairs after = {len(pairs)}')
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
 
