@@ -77,7 +77,7 @@ def basic_comparison():
     pairs = match_corner_by_ncc((left_px_array, left_corners),
                                 (right_px_array, right_corners),
                                 feature_descriptor_path_size=15,
-                                threshold=0.85)
+                                threshold=0.9)
 
     slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
     fig1, ax1 = pyplot.subplots(1, 2)

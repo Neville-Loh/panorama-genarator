@@ -56,7 +56,10 @@ class Pair:
         width_offset: int
             Offset of the gradient.
         """
-        return (self.corner1.y - self.corner2.y) / (self.corner1.x - self.corner2.x + width_offset)
+        try:
+            return (self.corner1.y - self.corner2.y) / (self.corner1.x - self.corner2.x + width_offset)
+        except ZeroDivisionError:
+            return (self.corner1.y - self.corner2.y) / 1
 
     def cal_distance(self) -> float:
         """
