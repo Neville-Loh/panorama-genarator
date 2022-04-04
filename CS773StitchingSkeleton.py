@@ -91,8 +91,7 @@ def basic_comparison():
 
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection")
     print(f'len of pairs before = {len(pairs)}')
-    pairs = reject_outlier_pairs(pairs, width_offset=width)
-    print(pairs)
+    pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
     print(f'len of pairs after = {len(pairs)}')
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
 

@@ -7,7 +7,6 @@ from image_stiching.performance_evaulation.timer import measure_elapsed_time
 
 """
 Feature Descriptor is a class that is used to compute the feature descriptor of a local zones.
-
 @Author Neville Loh
 """
 
@@ -176,7 +175,7 @@ def reject_outlier_pairs(pairs: List[Type[Pair]], m: Optional[float] = 2, width_
     pairs : List[Type[Pair]]
         List of pairs
     m : int
-        Number of standard deviations to reject
+        Number of standard deviations to include, a lower number will reject more outliers'
     width_offset : int
         Offset to the width of the image
 
@@ -193,14 +192,13 @@ def reject_outlier_pairs(pairs: List[Type[Pair]], m: Optional[float] = 2, width_
     std = np.std(slopes)
     i = np.array([abs(pair.cal_gradient(width_offset=width_offset) - mean) < m * std for pair in pairs])
     pairs = pairs[i]
-    print(len(pairs))
 
-    # distance outlier detection
-    distances = [pair.distance for pair in pairs]
-    mean = np.mean(distances)
-    std = np.std(distances)
-    i = np.array([abs(pair.distance - mean) < m * std for pair in pairs])
-    pairs = pairs[i]
-    print(len(pairs))
+    # # distance outlier detection
+    # distances = [pair.distance for pair in pairs]
+    # mean = np.mean(distances)
+    # std = np.std(distances)
+    # i = np.array([abs(pair.distance - mean) < m * std for pair in pairs])
+    # pairs = pairs[i]
+
 
     return pairs
