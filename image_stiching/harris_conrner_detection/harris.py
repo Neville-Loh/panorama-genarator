@@ -11,6 +11,7 @@ from image_stiching.performance_evaulation.util import measure_elapsed_time
 Harris corner detection
 A generic implementation of Harris Corner detection Algorithm
 
+@Author: Neville Loh
 """
 
 # Default image type is np array.

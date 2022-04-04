@@ -1,21 +1,16 @@
+import sys
 import argparse
-
 import numpy as np
 from matplotlib import pyplot
-from matplotlib.patches import ConnectionPatch
-import sys
-
-from timeit import default_timer as timer
 
 import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
-import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
-from data_exploration.histograms import plot_histogram
 from data_exploration.image_plot import plot_side_by_side_pairs
 from data_exploration.util import slope, reject_outliers, reject_pair_outliers
 from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
+from image_stiching.performance_evaulation.util import measure_elapsed_time
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
@@ -49,19 +44,13 @@ def pixelArrayToSingleList(pixelArray):
     return list_of_pixel_values
 
 
+@measure_elapsed_time
 def filenameToSmoothedAndScaledpxArray(filename):
     (image_width, image_height, px_array_original) = IORW.readRGBImageAndConvertToGreyscalePixelArray(filename)
-
-    start = timer()
     px_array_smoothed = IPSmooth.computeGaussianAveraging3x3(px_array_original, image_width, image_height)
-    end = timer()
-    print("elapsed time image smoothing: ", end - start)
 
-    start = timer()
     # make sure greyscale image is stretched to full 8 bit intensity range of 0 to 255
     px_array_smoothed_scaled = IPPixelOps.scaleTo0And255AndQuantize(px_array_smoothed, image_width, image_height)
-    end = timer()
-    print("elapsed time  image smoothing: ", end - start)
     return px_array_smoothed_scaled
 
 
@@ -112,7 +101,6 @@ def basic_comparison():
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
 
 
-
 def main():
     # Retrieve all command line argument
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
@@ -124,7 +112,8 @@ def main():
 
     # Parse all additional argument if there is any
     else:
-        parser = argparse.ArgumentParser(description='Description of your program')
+        parser = argparse.ArgumentParser(description='A basic image stitching program written by Neville Loh and '
+                                                     'Nicholas Berg.')
 
         # input image path parameters
         parser.add_argument('input', metavar='input', type=str)

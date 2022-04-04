@@ -5,7 +5,9 @@ from image_stiching.harris_conrner_detection.harris_util import compute_gaussian
 from image_stiching.performance_evaulation.util import measure_elapsed_time
 
 """
-Feature Descriptor
+Feature Descriptor is a class that is used to compute the feature descriptor of a local zones.
+
+@Author Neville Loh
 """
 
 
