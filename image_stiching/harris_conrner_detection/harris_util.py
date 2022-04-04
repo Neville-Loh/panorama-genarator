@@ -6,6 +6,7 @@ import imageProcessing.convolve2D as IPConv2D
 """
 Utility class contain helper function for computing harris corner
 
+@Author Neville Loh
 """
 
 
@@ -61,7 +62,7 @@ def compute_gaussian_averaging(pixel_array: ImageArray, windows_size: Optional[i
 
 
 def get_gaussian_kernel(window_size: int, sigma: float, offset: Optional[float] = 0.0) -> List[float]:
-    """Compute the gaussian 1D kernel given the sigma as a constants
+    """Compute the gaussian 1D kernel given the sigma as a constant
 
     Parameters
     ----------
