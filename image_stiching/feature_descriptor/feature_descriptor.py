@@ -33,7 +33,7 @@ def get_patches(corners: List[Type[Corner]], patch_size: int, img: np.ndarray) -
     center_index = patch_size // 2
 
     img = np.array(img)
-    img = compute_gaussian_averaging(img, windows_size=7)
+    img = compute_gaussian_averaging(img, windows_size=3)
 
     result_corners = []
     height, width = img.shape
@@ -119,7 +119,7 @@ def compare(corners1: List[Type[Corner]], corners2: List[Type[Corner]]) -> \
 
         # check ratio between 2nd best match and best
         ratio = best2[1] / best[1]
-        if ratio <= 0.9:
+        if ratio <= 0.85:
             pairs.append((c1, best[0], best[1]))
 
     return pairs

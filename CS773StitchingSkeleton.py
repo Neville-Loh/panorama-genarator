@@ -12,6 +12,7 @@ import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
 import imageProcessing.smoothing as IPSmooth
 from data_exploration.histograms import plot_histogram
+from data_exploration.image_plot import plot_side_by_side_pairs
 from data_exploration.util import slope, reject_outliers, reject_pair_outliers
 from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
@@ -38,17 +39,6 @@ def prepareRGBImageFromIndividualArrays(r_pixel_array, g_pixel_array, b_pixel_ar
             row.append(triple)
         rgbImage.append(row)
     return rgbImage
-
-
-# takes two images (of the same pixel size!) as input and returns a combined image of double the image width
-def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image_height):
-    matchingImage = IPUtils.createInitializedGreyscalePixelArray(image_width * 2, image_height)
-    for y in range(image_height):
-        for x in range(image_width):
-            matchingImage[y][x] = left_pixel_array[y][x]
-            matchingImage[y][image_width + x] = right_pixel_array[y][x]
-
-    return matchingImage
 
 
 def pixelArrayToSingleList(pixelArray):
@@ -84,13 +74,13 @@ def basic_comparison():
     left_corners = compute_harris_corner(left_px_array,
                                          n_corner=1000,
                                          alpha=0.04,
-                                         gaussian_window_size=3,
+                                         gaussian_window_size=7,
                                          plot_image=False)
 
     right_corners = compute_harris_corner(right_px_array,
                                           n_corner=1000,
                                           alpha=0.04,
-                                          gaussian_window_size=5,
+                                          gaussian_window_size=7,
                                           plot_image=False)
 
     left_corners = get_patches(left_corners, 15, left_px_array)
@@ -104,7 +94,6 @@ def basic_comparison():
         sl = slope(pair[0].x, pair[0].y, pair[1].x + width, pair[1].y)
         s.append(sl)
         slops.append((pair[0], pair[1], sl))
-        print(sl)
 
     fig1, ax1 = pyplot.subplots(1, 2)
     ax1[0].set_title('Before rejection')
@@ -112,39 +101,16 @@ def basic_comparison():
     # pyplot.show()
 
     s = reject_outliers(np.array(s))
-
     ax1[1].set_title('After rejection')
     ax1[1].boxplot(s)
     pyplot.show()
 
-    matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
-    pyplot.imshow(matching_image, cmap='gray')
-    ax = pyplot.gca()
-    ax.set_title("Matching image")
-
-
-    for pair in pairs:
-        point_a = (pair[0].x, pair[0].y)
-        point_b = (pair[1].x + width, pair[1].y)
-        connection = ConnectionPatch(point_a, point_b, "data", edgecolor='r', linewidth=1)
-        ax.add_artist(connection)
-
-    pyplot.show()
-
-    matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
-    pyplot.imshow(matching_image, cmap='gray')
-    ax = pyplot.gca()
-    ax.set_title("Matching image")
-
+    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection")
+    print(f'len of pairs before = {len(pairs)}')
     pairs = reject_pair_outliers(slops, s)
-    print(len(pairs))
-    for pair in pairs:
-        point_a = (pair[0].x, pair[0].y)
-        point_b = (pair[1].x + width, pair[1].y)
-        connection = ConnectionPatch(point_a, point_b, "data", edgecolor='r', linewidth=1)
-        ax.add_artist(connection)
+    print(f'len of pairs after = {len(pairs)}')
+    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
 
-    pyplot.show()
 
 
 def main():
