@@ -2,11 +2,8 @@
 # Solem, J. E. (2012). Programming Computer Vision with Python:
 # Tools and algorithms for analyzing images. " O'Reilly Media, Inc.".
 # The code has been modified to work with updated packages and python 3 vs. the original python 2 implementation.
-import numpy as np
 from pylab import *
-from numpy import *
 from scipy.ndimage import gaussian_filter
-from PIL import Image
 from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
 from data_exploration.image_plot import prepareMatchingImage
 
