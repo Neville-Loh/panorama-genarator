@@ -181,6 +181,48 @@ def match_twosided(desc1, desc2):
 
     return matches_12
 
+def plot_SIFT_circles(left_image, right_image):
+    left_image_arry = array(Image.open(left_image).convert('L'))
+    right_image_arry = array(Image.open(right_image).convert('L'))
+
+    height, width = len(left_image_arry), len(left_image_arry[0])
+
+    process_image(left_image, 'left_image.sift')
+    process_image(right_image, 'right_image.sift')
+
+    left1, leftd1 = read_features_from_file('left_image.sift')
+    right1, rightd1 = read_features_from_file('right_image.sift')
+
+    im3 = appendimages(left_image_arry, right_image_arry)
+    l_join = appendimages(left1, right1)
+
+    figure()
+    gray()
+    plot_features(im3, l_join, circle=True)
+    plot_features(im3, right1, width=width, circle=True)
+
+def plot_SIFT_mapping(left_image, right_image):
+        left_image_arry = array(Image.open(left_image).convert('L'))
+        right_image_arry = array(Image.open(right_image).convert('L'))
+
+        height, width = len(left_image_arry), len(left_image_arry[0])
+
+        process_image(left_image, 'left_image.sift')
+        process_image(right_image, 'right_image.sift')
+
+        left_feature_locations, left_descriptors = read_features_from_file('left_image.sift')
+        right_feature_locations, right_descriptors = read_features_from_file('right_image.sift')
+
+        matches = match_twosided(left_descriptors, right_descriptors)
+
+        figure()
+        gray()
+        distances = plot_matches(left_image_arry, right_image_arry, left_feature_locations, right_feature_locations,
+                                 matches)
+        show()
+
+        plot_histogram(distances, "Frequency distribution of distances between corresponding features", "Distance")
+        show()
 
 
 
@@ -188,28 +230,6 @@ def match_twosided(desc1, desc2):
 if __name__ == "__main__":
     left_image = SNOW_LEFT
     right_image = SNOW_RIGHT
+    plot_SIFT_circles(left_image, right_image)
 
-
-    left_image_arry = array(Image.open(left_image).convert('L'))
-    right_image_arry = array(Image.open(right_image).convert('L'))
-
-    height, width = len(left_image_arry), len(left_image_arry[0])
-
-    plot_features()
-
-    process_image(left_image, 'left_image.sift')
-    process_image(right_image, 'right_image.sift')
-
-    left_feature_locations, left_descriptors = read_features_from_file('left_image.sift')
-    right_feature_locations, right_descriptors = read_features_from_file('right_image.sift')
-
-    matches = match_twosided(left_descriptors, right_descriptors)
-
-    figure()
-    gray()
-    distances = plot_matches(left_image_arry, right_image_arry, left_feature_locations, right_feature_locations, matches)
-    show()
-
-    plot_histogram(distances, "Frequency distribution of distances between corresponding features", "Distance")
-    show()
 
