@@ -57,7 +57,7 @@ def filenameToSmoothedAndScaledpxArray(filename):
 
 def basic_comparison():
     left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
-    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
+    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
 
     height, width = len(left_px_array), len(left_px_array[0])
 
@@ -89,11 +89,11 @@ def basic_comparison():
     ax1[1].boxplot(s)
     pyplot.show()
 
-    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection")
+    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection", unique_color=False)
     print(f'len of pairs before = {len(pairs)}')
     pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
     print(f'len of pairs after = {len(pairs)}')
-    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
+    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection", unique_color=True)
 
 
 def main():
