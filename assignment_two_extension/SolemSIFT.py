@@ -145,12 +145,12 @@ def match_twosided(desc1, desc2):
     return matches_12
 
 if __name__ == "__main__":
-    left_image = MOUNTAIN_LEFT
-    right_image = MOUNTAIN_RIGHT
+    left_image = OXFORD_LEFT
+    right_image = OXFORD_RIGHT
 
 
-    left_image_arry = array(Image.open(MOUNTAIN_LEFT).convert('L'))
-    right_image_arry = array(Image.open(MOUNTAIN_RIGHT).convert('L'))
+    left_image_arry = array(Image.open(left_image).convert('L'))
+    right_image_arry = array(Image.open(right_image).convert('L'))
 
     height, width = len(left_image_arry), len(left_image_arry[0])
 
