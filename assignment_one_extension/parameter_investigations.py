@@ -4,10 +4,11 @@ from matplotlib import pyplot
 from matplotlib.patches import Circle, ConnectionPatch
 import numpy as np
 import sys
+
+from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
 from data_exploration.histograms import plot_histogram
 
 from timeit import default_timer as timer
-
 import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.utilities as IPUtils
@@ -18,6 +19,14 @@ from image_stiching.feature_descriptor.feature_descriptor import get_patches, co
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 from scipy.spatial import distance
 
+CHECKER_BOARD = "../images/cornerTest/checkerboard.png"
+MOUNTAIN_LEFT = "../images/panoramaStitching/tongariro_left_01.png"
+MOUNTAIN_RIGHT = "../images/panoramaStitching/tongariro_right_01.png"
+MOUNTAIN_SMALL_TEST = "../images/panoramaStitching/tongariro_left_01_small.png"
+SNOW_LEFT = "../images/panoramaStitching/snow_park_left_berg_loh_02.png"
+SNOW_RIGHT = "../images/panoramaStitching/snow_park_right_berg_loh_02.png"
+OXFORD_LEFT = "../images/panoramaStitching/oxford_left_berg_loh_01.png"
+OXFORD_RIGHT = "../images/panoramaStitching/oxford_right_berg_loh_01.png"
 
 def extension_compare_three_corner_algorithms_on_two_or_more_images(images=[MOUNTAIN_LEFT, OXFORD_LEFT, SNOW_LEFT]):
     fig1, axs1 = pyplot.subplots(len(images), 3, sharey=True)
@@ -244,50 +253,12 @@ def extension_naiveDetection():
                    "Distribution of Naieve Corner Values").show()
 
 def main():
-    # Retrieve all command line argument
-    opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
-    args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+    extension_compare_three_corner_algorithms_on_two_or_more_images()
+    extension_compare_alphas()
+    extension_compare_window_size()
+    extension_distribution_of_distances_between_points()
 
-    # If there is no argument, compute a basic comparison with default image
-    if len(args) == 0 and len(opts) == 0:
-        basic_comparison()
 
-    # Parse all additional argument if there is any
-    else:
-        parser = argparse.ArgumentParser(description='Description of your program')
-
-        # input image path parameters
-        parser.add_argument('input', metavar='input', type=str)
-
-        # Corner number argument Optional
-        parser.add_argument('-n', '--n_corner',
-                            help='Number of corner output by the algorithm. The output image will contain n corners '
-                                 'with the strongest response. If nothing is supplied, default to 1000',
-                            default=1000)
-
-        # Gaussian windows size argument Optional
-        parser.add_argument('-a', '--alpha',
-                            help='The Harris Response constant alpha. Specifies the weighting between corner with '
-                                 'strong with single direction and multi-direction. A higher alpha will result in '
-                                 'less difference between response of ingle direction and multi-direction shift in '
-                                 'intensity. If nothing is supplied, default to 0.04'
-                            , default=0.04)
-
-        # Gaussian windows size argument, Optional
-        parser.add_argument('-w', '--winsize',
-                            help='Gaussian windows size which applied the the squared and mix derivative of the image.'
-                                 'A higher windows size will result in higher degree of smoothing, If nothing is '
-                                 'supplied, the default widows size is set to 5.',
-                            default=5)
-        args = vars(parser.parse_args())
-
-        # Compute and plot Harris Corner with optional or default values
-        img = filenameToSmoothedAndScaledpxArray(args['input'])
-        compute_harris_corner(img,
-                              n_corner=int(args['n_corner']),
-                              alpha=float(args['alpha']),
-                              gaussian_window_size=int(args['winsize']),
-                              plot_image=True)
 
 
 
