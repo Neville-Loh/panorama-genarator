@@ -57,7 +57,7 @@ def filenameToSmoothedAndScaledpxArray(filename):
 
 def basic_comparison():
     left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
-    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
+    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
 
     height, width = len(left_px_array), len(left_px_array[0])
 
