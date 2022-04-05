@@ -5,6 +5,8 @@
 import numpy as np
 from pylab import *
 from numpy import argsort
+from matplotlib import colors as colors
+from matplotlib import cm as cmx
 
 from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
 from image_stiching.harris_conrner_detection.SolemHarrisImplementation import compute_harris_response, get_harris_points
@@ -87,7 +89,7 @@ def appendimages(im1, im2):
     return concatenate((im1, im2), axis=1)
 
 
-def plot_matches(im1, im2, locs1, locs2, matchscores, show_below=False):
+def plot_matches(im1: np.array, im2: np.array, locs1, locs2, matchscores, show_below=False, unique_color: bool =True):
     """ Show a figure with lines joining the accepted matches
         input: im1,im2 (images as arrays), locs1,locs2 (feature locations),
         matchscores (as output from 'match()'),
@@ -99,10 +101,19 @@ def plot_matches(im1, im2, locs1, locs2, matchscores, show_below=False):
 
     imshow(im3)
 
+    if unique_color:
+        cmap = plt.cm.jet
+        cNorm = colors.Normalize(vmin=0, vmax=len(pairs))
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
+
     cols1 = im1.shape[1]
     for i, m in enumerate(matchscores):
         if m > 0:
-            plot([locs1[i][1], locs2[m][1] + cols1], [locs1[i][0], locs2[m][0]], 'c')
+            if unique_color:
+                colorVal = scalarMap.to_rgba(colorIndex)
+            else:
+                colorVal = 'c'
+            plot([locs1[i][1], locs2[m][1] + cols1], [locs1[i][0], locs2[m][0]], colorVal)
     axis('off')
 
 if __name__ == "__main__":
