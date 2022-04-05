@@ -20,6 +20,7 @@ SNOW_RIGHT = "../images/panoramaStitching/snow_park_right_berg_loh_02.png"
 OXFORD_LEFT = "../images/panoramaStitching/oxford_left_berg_loh_01.png"
 OXFORD_RIGHT = "../images/panoramaStitching/oxford_right_berg_loh_01.png"
 
+
 def get_descriptors(image, filtered_coords, wid=5):
     """ For each point return pixel values around the point
         using a neighbourhood of width 2*wid+1. (Assume points are
@@ -89,7 +90,7 @@ def appendimages(im1, im2):
     return concatenate((im1, im2), axis=1)
 
 
-def plot_matches(im1: np.array, im2: np.array, locs1, locs2, matchscores, show_below=False, unique_color: bool =True):
+def plot_matches(im1: np.array, im2: np.array, locs1, locs2, matchscores, show_below=False, unique_color: bool = True):
     """ Show a figure with lines joining the accepted matches
         input: im1,im2 (images as arrays), locs1,locs2 (feature locations),
         matchscores (as output from 'match()'),
@@ -103,18 +104,21 @@ def plot_matches(im1: np.array, im2: np.array, locs1, locs2, matchscores, show_b
 
     if unique_color:
         cmap = plt.cm.jet
-        cNorm = colors.Normalize(vmin=0, vmax=len(pairs))
+        cNorm = colors.Normalize(vmin=0, vmax=(matchscores > 0).sum())
         scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
+        colorIndex = 0
 
     cols1 = im1.shape[1]
     for i, m in enumerate(matchscores):
         if m > 0:
             if unique_color:
                 colorVal = scalarMap.to_rgba(colorIndex)
+                colorIndex += 1
             else:
                 colorVal = 'c'
             plot([locs1[i][1], locs2[m][1] + cols1], [locs1[i][0], locs2[m][0]], colorVal)
     axis('off')
+
 
 if __name__ == "__main__":
     im1 = np.array(filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT))
