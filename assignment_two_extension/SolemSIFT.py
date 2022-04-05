@@ -4,9 +4,11 @@
 # The code has been modified to work with updated packages and python 3 vs. the original python 2 implementation.
 # Due to the complexity of a SIFT implementation, as part of our extension we are relying on existing implemenations for
 # comparison with our NCC
+import math
 
 from PIL import Image
 from pylab import *
+from data_exploration.histograms import plot_histogram
 import os
 
 LOCAL_MOUNTAIN = "tongariro_left_01.png"
@@ -128,6 +130,41 @@ def plot_matches(im1, im2, locs1, locs2, matchscores, show_below=True):
             plot([locs1[i][0], locs2[m][0] + cols1], [locs1[i][1], locs2[m][1]], 'c')
     axis('off')
 
+from matplotlib import colors as colors
+from matplotlib import cm as cmx
+
+def plot_matches(im1: np.array, im2: np.array, locs1, locs2, matchscores, show_below=False, unique_color: bool = True):
+    """ Show a figure with lines joining the accepted matches
+        input: im1,im2 (images as arrays), locs1,locs2 (feature locations),
+        matchscores (as output from 'match()'),
+        show_below (if images should be shown below matches). """
+
+    im3 = appendimages(im1, im2)
+    if show_below:
+        im3 = vstack((im3, im3))
+
+    imshow(im3)
+
+    if unique_color:
+        cmap = plt.cm.jet
+        cNorm = colors.Normalize(vmin=0, vmax=(matchscores > 0).sum())
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
+        colorIndex = 0
+
+    distances = []
+
+    cols1 = im1.shape[1]
+    for i, m in enumerate(matchscores):
+        if m > 0:
+            if unique_color:
+                colorVal = scalarMap.to_rgba(colorIndex)
+                colorIndex += 1
+            else:
+                colorVal = 'c'
+            plot([locs1[i][0], locs2[m][0] + cols1], [locs1[i][1], locs2[m][1]], colorVal)
+            distances.append(math.sqrt((locs1[i][0]-locs2[m][0])**2+(locs1[i][1]-locs2[m][1])**2))
+    axis('off')
+    return distances
 
 def match_twosided(desc1, desc2):
     """ Two-sided symmetric version of match(). """
@@ -144,9 +181,13 @@ def match_twosided(desc1, desc2):
 
     return matches_12
 
+
+
+
+
 if __name__ == "__main__":
-    left_image = OXFORD_LEFT
-    right_image = OXFORD_RIGHT
+    left_image = SNOW_LEFT
+    right_image = SNOW_RIGHT
 
 
     left_image_arry = array(Image.open(left_image).convert('L'))
@@ -154,19 +195,21 @@ if __name__ == "__main__":
 
     height, width = len(left_image_arry), len(left_image_arry[0])
 
+    plot_features()
+
     process_image(left_image, 'left_image.sift')
     process_image(right_image, 'right_image.sift')
 
-    left1, leftd1 = read_features_from_file('left_image.sift')
-    right1, rightd1 = read_features_from_file('right_image.sift')
+    left_feature_locations, left_descriptors = read_features_from_file('left_image.sift')
+    right_feature_locations, right_descriptors = read_features_from_file('right_image.sift')
 
-    im3 = appendimages(left_image_arry, right_image_arry)
-    l_join = appendimages(left1, right1)
-
+    matches = match_twosided(left_descriptors, right_descriptors)
 
     figure()
     gray()
-    print(right1)
-    plot_features(im3, l_join, circle=True)
-    plot_features(im3, right1, width=width, circle=True)
+    distances = plot_matches(left_image_arry, right_image_arry, left_feature_locations, right_feature_locations, matches)
     show()
+
+    plot_histogram(distances, "Frequency distribution of distances between corresponding features", "Distance")
+    show()
+
