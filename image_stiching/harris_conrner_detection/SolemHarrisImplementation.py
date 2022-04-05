@@ -8,6 +8,15 @@ from numpy import *
 from scipy.ndimage import gaussian_filter
 from PIL import Image
 
+CHECKER_BOARD = "../../images/cornerTest/checkerboard.png"
+MOUNTAIN_LEFT = "../../images/panoramaStitching/tongariro_left_01.png"
+MOUNTAIN_RIGHT = "../../images/panoramaStitching/tongariro_right_01.png"
+MOUNTAIN_SMALL_TEST = "../../images/panoramaStitching/tongariro_left_01_small.png"
+SNOW_LEFT = "../../images/panoramaStitching/snow_park_left_berg_loh_02.png"
+SNOW_RIGHT = "../../images/panoramaStitching/snow_park_right_berg_loh_02.png"
+OXFORD_LEFT = "./images/panoramaStitching/oxford_left_berg_loh_01.png"
+OXFORD_RIGHT = "./images/panoramaStitching/oxford_right_berg_loh_01.png"
+
 
 def compute_harris_response(im, sigma=3):
 
@@ -83,4 +92,4 @@ def solemCornerDetection(image_location, plot=False):
 
 
 if __name__ == "__main__":
-    solemCornerDetection("./images/panoramaStitching/oxford_right_berg_loh_01.png")
+    solemCornerDetection(MOUNTAIN_LEFT)
