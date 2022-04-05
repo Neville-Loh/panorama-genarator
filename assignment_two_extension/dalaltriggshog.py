@@ -125,25 +125,30 @@ def hog_of_one_image():
     plt.imshow(image, cmap='gray')
     plt.show()
 
-def match(desc1, desc2, threshold=0.9):
+# def match(desc1, desc2, threshold=0.9):
     """ For each corner point descriptor in the first image,
         select its match to second image using
         normalized cross correlation. """
 
     # pair-wise distances
-    d = -ones((len(desc1), len(desc2)))
-    for i in range(len(desc1)):
-        for j in range(len(desc2)):
-            d1 = (desc1[i] - mean(desc1[i])) / std(desc1[i])
-            d2 = (desc2[j] - mean(desc2[j])) / std(desc2[j])
-            ncc_value = sum(d1 * d2) / (n - 1)
-            if ncc_value > threshold:
-                d[i, j] = ncc_value
 
-    ndx = argsort(-d)
-    matchscores = ndx[:, 0]
+    # for x in range(desc1):
+    #     for y in range(desc2):
+    #         comparison = sqrt(x**2-y**2)
+    #
+    # d = -ones((len(desc1), len(desc2)))
+    # for i in range(len(desc1)):
+    #     for j in range(len(desc2)):
+    #         d1 = (desc1[i] - mean(desc1[i])) / std(desc1[i])
+    #         d2 = (desc2[j] - mean(desc2[j])) / std(desc2[j])
+    #         ncc_value = sum(d1 * d2) / (n - 1)
+    #         if ncc_value > threshold:
+    #             d[i, j] = ncc_value
 
-    return matchscores
+    # ndx = argsort(-d)
+    # matchscores = ndx[:, 0]
+    #
+    # return matchscores
 
 def match_twosided(desc1, desc2, threshold=0.5):
     """ Two-sided symmetric version of match(). """
@@ -191,8 +196,8 @@ def plot_matches(im1: np.array, im2: np.array, locs1, locs2, matchscores, show_b
 
 if __name__ == "__main__":
     # hog_of_one_image()
-    im1 = np.array(filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT))
-    im2 = np.array(filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT))
+    im1 = np.array(filenameToSmoothedAndScaledpxArray(SNOW_LEFT))
+    im2 = np.array(filenameToSmoothedAndScaledpxArray(SNOW_RIGHT))
     hog1 = Hog_descriptor(im1, cell_size=16, bin_size=16)
     hog2 = Hog_descriptor(im2, cell_size=16, bin_size=16)
     vector1, hogimage1 = hog1.extract()
@@ -201,6 +206,14 @@ if __name__ == "__main__":
     height, width = len(im1), len(im1[0])
     matching_image = prepareMatchingImage(im1, im2, width, height)
     matching_image2 = prepareMatchingImage(hogimage1, hogimage2, width, height)
+
+    # matches = match_twosided(hog1.flatten(), hog2.flatten())
+
+    figure()
+    gray()
+    # distances = plot_matches(im1, im2, hog1.flatten(), hog2.flatten(),
+    #                          matches)
+    # show()
 
     stacked_image = vstack((matching_image, matching_image2))
     imshow(stacked_image)

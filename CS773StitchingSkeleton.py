@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 from matplotlib import pyplot
 
+import assignment_two_extension.distancedistributions
 import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.smoothing as IPSmooth
@@ -89,11 +90,16 @@ def basic_comparison():
     ax1[1].boxplot(s)
     pyplot.show()
 
+    unfiltered_distance = [pair.distance for pair in pairs]
+
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection", unique_color=False)
     print(f'len of pairs before = {len(pairs)}')
     pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
     print(f'len of pairs after = {len(pairs)}')
     plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection", unique_color=True)
+
+    filtered_distance = [pair.distance for pair in pairs]
+    assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,filtered_distance)
 
 
 def main():
