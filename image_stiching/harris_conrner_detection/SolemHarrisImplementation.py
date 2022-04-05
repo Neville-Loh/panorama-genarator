@@ -8,8 +8,7 @@ from numpy import *
 from scipy.ndimage import gaussian_filter
 from PIL import Image
 from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
-from data_exploration.image_plot import plot_side_by_side_pairs
-
+from data_exploration.image_plot import prepareMatchingImage
 
 CHECKER_BOARD = "../../images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "../../images/panoramaStitching/tongariro_left_01.png"
@@ -22,7 +21,6 @@ OXFORD_RIGHT = "../../images/panoramaStitching/oxford_right_berg_loh_01.png"
 
 
 def compute_harris_response(im, sigma=3):
-
     # derivatives
     imx = zeros(im.shape)
     gaussian_filter(im, (sigma, sigma), (0, 1), imx)
@@ -35,7 +33,7 @@ def compute_harris_response(im, sigma=3):
     Wyy = gaussian_filter(imy * imy, sigma)
 
     # determinant and trace
-    Wdet = Wxx*Wyy - Wxy**2
+    Wdet = Wxx * Wyy - Wxy ** 2
     Wtr = Wxx + Wyy
 
     return Wdet / Wtr
@@ -85,25 +83,36 @@ def plot_harris_points(image, filtered_coords):
     axis('off')
     show()
 
+
 def solemCornerDetection(left_image_location, right_image_location=None, plot=False):
     left_px_array = filenameToSmoothedAndScaledpxArray(left_image_location)
     left_px_numpy_array = np.array(left_px_array)
+    left_harrisim = compute_harris_response(left_px_numpy_array)
+    left_filtered_coords = get_harris_points(left_harrisim, 6)
 
-    harrisim = compute_harris_response(left_px_numpy_array)
-    filtered_coords = get_harris_points(harrisim, 6)
+    if right_image_location is not None:
+        right_px_array = filenameToSmoothedAndScaledpxArray(right_image_location)
+        right_px_numpy_array = np.array(right_px_array)
+        right_harrisim = compute_harris_response(right_px_numpy_array)
+        right_filtered_coords = get_harris_points(right_harrisim, 6)
     if plot:
-        plot_harris_points(left_px_numpy_array, filtered_coords)
+        height, width = len(left_px_array), len(left_px_array[0])
+        if right_image_location is None:
+            plot_harris_points(left_px_array, left_filtered_coords)
+        else:
+            matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
+            plt.imshow(matching_image, cmap='gray')
+            ax = plt.gca()
+            ax.set_title("Solem Harris Corner Detection Output")
+            plt.plot([p[1] for p in left_filtered_coords],
+                     [p[0] for p in left_filtered_coords], '.')
 
-        plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection")
-        print(f'len of pairs before = {len(pairs)}')
-        pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
-        print(f'len of pairs after = {len(pairs)}')
-        plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection")
+            plt.plot([p[1] + width for p in right_filtered_coords],
+                     [p[0] for p in right_filtered_coords], '.')
+        plt.show()
 
-
-
-    return filtered_coords
+    return left_filtered_coords
 
 
 if __name__ == "__main__":
-    solemCornerDetection(MOUNTAIN_LEFT, plot=True)
+    solemCornerDetection(MOUNTAIN_LEFT, MOUNTAIN_RIGHT, plot=True)
