@@ -104,6 +104,7 @@ def basic_comparison(histogram=False):
         assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
                                                                                        filtered_distance)
 
+
 def main():
     # Retrieve all command line argument
     opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
@@ -126,12 +127,14 @@ def main():
 
         # Corner number argument Optional
         parser.add_argument('-n', '--n_corner',
+                            type=int,
                             help='Number of corner output by the algorithm. The output image will contain n corners '
                                  'with the strongest response. If nothing is supplied, default to 1000',
                             default=1000)
 
         # Gaussian windows size argument Optional
         parser.add_argument('-a', '--alpha',
+                            type=float,
                             help='The Harris Response constant alpha. Specifies the weighting between corner with '
                                  'strong with single direction and multi-direction. A higher alpha will result in '
                                  'less difference between response of ingle direction and multi-direction shift in '
@@ -140,6 +143,7 @@ def main():
 
         # Gaussian windows size argument, int Optional
         parser.add_argument('-w', '--winsize',
+                            type=int,
                             help='Gaussian windows size which applied the the squared and mix derivative of the image.'
                                  'A higher windows size will result in higher degree of smoothing, If nothing is '
                                  'supplied, the default widows size is set to 5.',
@@ -147,29 +151,34 @@ def main():
 
         # Plot harris corner argument Optional
         parser.add_argument('-ph', '--plot_harris_corner',
+                            type=bool,
                             help='Plot the Harris corner response. If nothing is supplied, the default is set to False',
                             default=False)
 
         # Feature Descriptor Path Size, int Optional
-        parser.add_argument('-fps', '--feature_descriptor_patch_size',
+        parser.add_argument('-fds', '--feature_descriptor_patch_size',
+                            type=int,
                             help='The size of the feature descriptor patch. If nothing is supplied, the default '
                                  'patch size is set to 15.',
                             default=15)
 
         # Feature Descriptor Threshold, float Optional
-        parser.add_argument('-fpt', '--feature_descriptor_threshold',
+        parser.add_argument('-fdt', '--feature_descriptor_threshold',
+                            type=float,
                             help='The threshold of the feature descriptor. If nothing is supplied, the default '
                                  'threshold is set to 0.9',
                             default=0.9)
 
         # Outlier Rejection, bool Optional
         parser.add_argument('-or', '--enable_outlier_rejection',
+                            type=bool,
                             help='Enable outlier rejection. If nothing is supplied, the default is set to True',
                             default=False)
 
         # Outlier Rejection M, float Optional
         parser.add_argument('-orm', '--outlier_rejection_std',
-                            help='The outlier rejection starndard diviation to include. If nothing is supplied, '
+                            type=float,
+                            help='The outlier rejection standard deviation to include. If nothing is supplied, '
                                  'the default is set to 1',
                             default=1)
 
