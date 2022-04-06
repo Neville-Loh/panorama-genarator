@@ -18,7 +18,7 @@ def match_corner_by_ncc(image_data_1: Tuple[ImageArray, List[Type[Corner]]],
                         image_data_2: Tuple[ImageArray, List[Type[Corner]]],
                         feature_descriptor_path_size: Optional[int] = 15,
                         threshold: Optional[float] = 0.85) -> \
-        List[Type[Pair]]:
+        List[Pair]:
     """
     Match the feature descriptors of the corners.
 
@@ -79,23 +79,18 @@ def get_patches(corners: List[Type[Corner]], img: np.ndarray, patch_size: int) -
         # ignore border
         if not (c.x < center_index or c.x >= width - center_index
                 or c.y < center_index or c.y >= height - center_index):
-
             # getting the window
             patch: np.ndarray = img[c.y - center_index: c.y + center_index + 1,
-                                c.x - center_index: c.x + center_index + 1]
+                                    c.x - center_index: c.x + center_index + 1]
 
-            # pre-compute the mean and standard deviation
+            # pre-compute the standard deviation and normalize the patch
             patch = (patch - np.mean(patch))
+            std = (np.sqrt(np.sum(patch ** 2)))
 
-            # setting the result
-            c.feature_descriptor = patch
-            c.patch_mse = np.sqrt(np.sum(patch ** 2))
+            # set feature descriptor and handle zero division error
+            c.feature_descriptor = patch / std if std != 0 else patch / 1e-10
 
-            if patch.shape != (15, 15):
-                print(f'x = {c.x},y={c.y}, shape={patch.shape}')
-            else:
-                result_corners.append(c)
-            # c.feature_descriptor = patch.flatten()
+            result_corners.append(c)
 
     return result_corners
 
@@ -115,12 +110,12 @@ def compute_ncc(c1: Type[Corner], c2: Type[Corner]) -> float:
         float, the normalised cross correlation. The higher the value the better it correlates.
     """
     # compute the normalised cross correlation
-    return np.sum(c1.feature_descriptor * c2.feature_descriptor) / (c1.patch_mse * c2.patch_mse)
+    return float(np.sum(c1.feature_descriptor * c2.feature_descriptor))
 
 
 @measure_elapsed_time
 def compare_all_ncc(corners1: List[Type[Corner]], corners2: List[Type[Corner]], threshold: float) -> \
-        List[Type[Pair]]:
+        List[Pair]:
     """
     compare the two list of corners, and return the best matches.
     O(n^2) complexity. Brute force implementation.
@@ -199,7 +194,5 @@ def reject_outlier_pairs(pairs: List[Type[Pair]], m: Optional[float] = 2, width_
     std = np.std(slopes)
     i = np.array([abs(pair.cal_gradient(width_offset=width_offset) - mean) < m * std for pair in pairs])
     pairs = pairs[i]
-
-
 
     return pairs
