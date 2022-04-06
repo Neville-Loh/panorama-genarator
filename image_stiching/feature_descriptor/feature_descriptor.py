@@ -16,7 +16,7 @@ ImageArray = np.ndarray
 @measure_elapsed_time
 def match_corner_by_ncc(image_data_1: Tuple[ImageArray, List[Type[Corner]]],
                         image_data_2: Tuple[ImageArray, List[Type[Corner]]],
-                        feature_descriptor_path_size: Optional[int] = 15,
+                        feature_descriptor_patch_size: Optional[int] = 15,
                         threshold: Optional[float] = 0.85) -> \
         List[Pair]:
     """
@@ -28,7 +28,7 @@ def match_corner_by_ncc(image_data_1: Tuple[ImageArray, List[Type[Corner]]],
         Tuple of the image and the list of corners
     image_data_2 : Tuple[ImageArray, List[Type[Corner]]]
         Tuple of the image and the list of corners
-    feature_descriptor_path_size : Optional[int]
+    feature_descriptor_patch_size : Optional[int]
         Size of the patch of normalized cross correlation
     threshold : Optional[float]
         Threshold ratio for the best match and the second-best match.
@@ -40,14 +40,15 @@ def match_corner_by_ncc(image_data_1: Tuple[ImageArray, List[Type[Corner]]],
     left_px_array, left_corners = image_data_1
     right_px_array, right_corners = image_data_2
 
-    left_corners = get_patches(left_corners, left_px_array, feature_descriptor_path_size)
-    right_corners = get_patches(right_corners, right_px_array, feature_descriptor_path_size)
+    left_corners = compute_feature_descriptor(left_corners, left_px_array, feature_descriptor_patch_size)
+    right_corners = compute_feature_descriptor(right_corners, right_px_array, feature_descriptor_patch_size)
     pairs = compare_all_ncc(left_corners, right_corners, threshold)
 
     return pairs
 
 
-def get_patches(corners: List[Type[Corner]], img: np.ndarray, patch_size: int) -> \
+@measure_elapsed_time
+def compute_feature_descriptor(corners: List[Type[Corner]], img: np.ndarray, patch_size: int) -> \
         List[Type[Corner]]:
     """
     Get the patches from the image
@@ -81,7 +82,7 @@ def get_patches(corners: List[Type[Corner]], img: np.ndarray, patch_size: int) -
                 or c.y < center_index or c.y >= height - center_index):
             # getting the window
             patch: np.ndarray = img[c.y - center_index: c.y + center_index + 1,
-                                    c.x - center_index: c.x + center_index + 1]
+                                c.x - center_index: c.x + center_index + 1]
 
             # pre-compute the standard deviation and normalize the patch
             patch = (patch - np.mean(patch))
@@ -160,8 +161,9 @@ def compare_all_ncc(corners1: List[Type[Corner]], corners2: List[Type[Corner]], 
     return pairs
 
 
-def reject_outlier_pairs(pairs: List[Type[Pair]], m: Optional[float] = 2, width_offset: Optional[int] = 0) \
-        -> List[Type[Pair]]:
+@measure_elapsed_time
+def reject_outlier_pairs(pairs: List[Pair], m: Optional[float] = 2, width_offset: Optional[int] = 0) \
+        -> List[Pair]:
     """
     Reject outliers from the data.
 

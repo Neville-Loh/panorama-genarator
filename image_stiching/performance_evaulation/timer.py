@@ -24,7 +24,7 @@ def measure_elapsed_time(f):
         ts = time()
         result = f(*args, **kw)
         te = time()
-        print('func:%-*r  Elapsed time: %2.4f sec' % (30, f.__name__, te - ts))
+        print('func:%-*r  Elapsed time: %2.4f sec' % (40, f.__name__, te - ts))
         return result
 
     return wrap

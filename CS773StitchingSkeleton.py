@@ -4,15 +4,15 @@ import numpy as np
 from matplotlib import pyplot
 
 import assignment_two_extension.distancedistributions
+from data_exploration.image_plot import plot_side_by_side_pairs
+from data_exploration.util import reject_outliers
 import imageIO.readwrite as IORW
 import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.smoothing as IPSmooth
-from data_exploration.image_plot import plot_side_by_side_pairs
-from data_exploration.util import reject_outliers, reject_pair_outliers
-from image_stiching.feature_descriptor.feature_descriptor import get_patches, compare_all_ncc, match_corner_by_ncc, \
-    reject_outlier_pairs
+from image_stiching.feature_descriptor.feature_descriptor import match_corner_by_ncc, reject_outlier_pairs
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
+from image_stiching.stiching import stitch
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
@@ -77,7 +77,7 @@ def basic_comparison(histogram=False):
     # get the best matches for each corner in the left image
     pairs = match_corner_by_ncc((left_px_array, left_corners),
                                 (right_px_array, right_corners),
-                                feature_descriptor_path_size=15,
+                                feature_descriptor_patch_size=15,
                                 threshold=0.9)
 
     slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
@@ -101,7 +101,8 @@ def basic_comparison(histogram=False):
     filtered_distance = [pair.distance for pair in pairs]
 
     if histogram:
-        assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,filtered_distance)
+        assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
+                                                                                       filtered_distance)
 
 
 def main():
@@ -119,37 +120,86 @@ def main():
                                                      'Nicholas Berg.')
 
         # input image path parameters
-        parser.add_argument('input', metavar='input', type=str)
+        parser.add_argument('input1', metavar='input', type=str, help='The left image to be stitched.')
+
+        # Input File
+        parser.add_argument('input2', metavar='input2', type=str, help='The right image to be stitched.')
 
         # Corner number argument Optional
         parser.add_argument('-n', '--n_corner',
+                            type=int,
                             help='Number of corner output by the algorithm. The output image will contain n corners '
                                  'with the strongest response. If nothing is supplied, default to 1000',
                             default=1000)
 
         # Gaussian windows size argument Optional
         parser.add_argument('-a', '--alpha',
+                            type=float,
                             help='The Harris Response constant alpha. Specifies the weighting between corner with '
                                  'strong with single direction and multi-direction. A higher alpha will result in '
                                  'less difference between response of ingle direction and multi-direction shift in '
                                  'intensity. If nothing is supplied, default to 0.04'
                             , default=0.04)
 
-        # Gaussian windows size argument, Optional
+        # Gaussian windows size argument, int Optional
         parser.add_argument('-w', '--winsize',
+                            type=int,
                             help='Gaussian windows size which applied the the squared and mix derivative of the image.'
                                  'A higher windows size will result in higher degree of smoothing, If nothing is '
                                  'supplied, the default widows size is set to 5.',
                             default=5)
+
+        # Plot harris corner argument Optional
+        parser.add_argument('-ph', '--plot_harris_corner',
+                            type=bool,
+                            help='Plot the Harris corner response. If nothing is supplied, the default is set to False',
+                            default=False)
+
+        # Feature Descriptor Path Size, int Optional
+        parser.add_argument('-fds', '--feature_descriptor_patch_size',
+                            type=int,
+                            help='The size of the feature descriptor patch. If nothing is supplied, the default '
+                                 'patch size is set to 15.',
+                            default=15)
+
+        # Feature Descriptor Threshold, float Optional
+        parser.add_argument('-fdt', '--feature_descriptor_threshold',
+                            type=float,
+                            help='The threshold of the feature descriptor. If nothing is supplied, the default '
+                                 'threshold is set to 0.9',
+                            default=0.9)
+
+        # Outlier Rejection, bool Optional
+        parser.add_argument('-or', '--enable_outlier_rejection',
+                            type=bool,
+                            help='Enable outlier rejection. If nothing is supplied, the default is set to True',
+                            default=False)
+
+        # Outlier Rejection M, float Optional
+        parser.add_argument('-orm', '--outlier_rejection_std',
+                            type=float,
+                            help='The outlier rejection standard deviation to include. If nothing is supplied, '
+                                 'the default is set to 1',
+                            default=1)
+
         args = vars(parser.parse_args())
 
         # Compute and plot Harris Corner with optional or default values
-        img = filenameToSmoothedAndScaledpxArray(args['input'])
-        compute_harris_corner(img,
-                              n_corner=int(args['n_corner']),
-                              alpha=float(args['alpha']),
-                              gaussian_window_size=int(args['winsize']),
-                              plot_image=True)
+        img = filenameToSmoothedAndScaledpxArray(args['input1'])
+        img2 = filenameToSmoothedAndScaledpxArray(args['input2'])
+        stitch(
+            left_px_array=img,
+            right_px_array=img2,
+            n_corner=args['n_corner'],
+            alpha=args['alpha'],
+            gaussian_window_size=args['winsize'],
+            plot_harris_corner=args['plot_harris_corner'],
+            feature_descriptor_patch_size=args['feature_descriptor_patch_size'],
+            feature_descriptor_threshold=args['feature_descriptor_threshold'],
+            enable_outlier_rejection=args['enable_outlier_rejection'],
+            outlier_rejection_m=args['outlier_rejection_std'],
+            plot_result=True,
+        )
 
 
 if __name__ == "__main__":

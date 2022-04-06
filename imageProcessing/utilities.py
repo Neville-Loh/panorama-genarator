@@ -61,4 +61,3 @@ def computeMinAndMaxValues(pixel_array, image_width, image_height):
 
     return(min_value, max_value)
 
-
