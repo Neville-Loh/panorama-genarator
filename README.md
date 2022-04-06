@@ -1,6 +1,6 @@
 # COMPSCI 773 Assignment 1: Berg, N. & Loh, N.
 
-##Phase Two Extraction of Descriptors and Matching
+## Author
 
 <table>
   <tr>
@@ -23,25 +23,60 @@
   </tr>
 </table>
 
-## Requirement
-Python 3.8 or above, for dependancy, please refer to requirement.txt
 
-## How to run
+
+A basic image stitching program written by Neville Loh and Nicholas Berg.
+
+# Arguments and Usage
 
 
 ## Linux/Mac
 ```
 python3 CS773StitchingSkeleton.py
-
 ```
 
 ## Windows
 ```
 python CS773StitchingSkeleton.py
-
 ```
 
+Running the main file without arguments will result in the default image being stich to gether
 
+
+## Requirement
+Python 3.8 or above, for dependancy, please refer to requirement.txt
+
+
+## Usage
+```
+usage: python3 CS773StitchingSkeleton.py [-h] [-n N_CORNER] [-a ALPHA] [-w WINSIZE]
+               [-ph PLOT_HARRIS_CORNER] [-fds FEATURE_DESCRIPTOR_PATCH_SIZE]
+               [-fdt FEATURE_DESCRIPTOR_THRESHOLD]
+               [-or ENABLE_OUTLIER_REJECTION] [-orm OUTLIER_REJECTION_STD]
+               input input2
+```
+## Arguments
+### Quick reference table
+|Short |Long                             |Default|Description                                                                                                                                                                                                                                                                                        |
+|------|---------------------------------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|`-h`  |`--help`                         |       |show this help message and exit                                                                                                                                                                                                                                                                    |
+|`-n`  |`--n_corner`                     |`1000` |Number of corner output by the algorithm. The output image will contain n corners with the strongest response. If nothing is supplied, default to 1000                                                                                                                                             |
+|`-a`  |`--alpha`                        |`0.04` |The Harris Response constant alpha. Specifies the weighting between corner with strong with single direction and multi-direction. A higher alpha will result in less difference between response of ingle direction and multi-direction shift in intensity. If nothing is supplied, default to 0.04|
+|`-w`  |`--winsize`                      |`5`    |Gaussian windows size which applied the the squared and mix derivative of the image.A higher windows size will result in higher degree of smoothing, If nothing is supplied, the default widows size is set to 5.                                                                                  |
+|`-ph` |`--plot_harris_corner`           |       |Plot the Harris corner response. If nothing is supplied, the default is set to False                                                                                                                                                                                                               |
+|`-fds`|`--feature_descriptor_patch_size`|`15`   |The size of the feature descriptor patch. If nothing is supplied, the default patch size is set to 15.                                                                                                                                                                                             |
+|`-fdt`|`--feature_descriptor_threshold` |`0.9`  |The threshold of the feature descriptor. If nothing is supplied, the default threshold is set to 0.9                                                                                                                                                                                               |
+|`-or` |`--enable_outlier_rejection`     |       |Enable outlier rejection. If nothing is supplied, the default is set to True                                                                                                                                                                                                                       |
+|`-orm`|`--outlier_rejection_std`        |`1`    |The outlier rejection standard deviation to include. If nothing is supplied, the default is set to 1                                                                                                                                                                                               |
+
+
+
+
+
+### Example call with arguments
+```
+python3 CS773StitchingSkeleton.py images/panoramaStitching/oxford_left_berg_loh_01.png images/panoramaStitching/oxford_right_berg_loh_01.png -n 2000
+```
 
 
 
