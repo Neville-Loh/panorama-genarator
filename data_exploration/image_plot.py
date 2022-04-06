@@ -1,5 +1,7 @@
 from typing import List, Type
 from matplotlib import pyplot as plt
+from matplotlib import colors as colors
+from matplotlib import cm as cmx
 from matplotlib.patches import ConnectionPatch
 import imageProcessing.utilities as IPUtils
 
@@ -17,7 +19,7 @@ def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image
     return matchingImage
 
 
-def plot_side_by_side_pairs(left_px_array: List, right_px_array: List, pairs: List[Type[Pair]], title: str = None) \
+def plot_side_by_side_pairs(left_px_array: List, right_px_array: List, pairs: List[Type[Pair]], title: str = None, unique_color: bool = True) \
         -> None:
     """ Plot a side by side image
     Parameters
@@ -30,6 +32,8 @@ def plot_side_by_side_pairs(left_px_array: List, right_px_array: List, pairs: Li
         The list of pairs to plot
     title : str
         The title of the plot
+    unique_color : bool
+        Toggle unique colours for lines or single colours
     """
     height, width = len(left_px_array), len(left_px_array[0])
     matching_image = prepareMatchingImage(left_px_array, right_px_array, width, height)
@@ -37,10 +41,21 @@ def plot_side_by_side_pairs(left_px_array: List, right_px_array: List, pairs: Li
     ax = plt.gca()
     ax.set_title(title)
 
+    if unique_color:
+        cmap = plt.cm.jet
+        cNorm = colors.Normalize(vmin=0, vmax=len(pairs))
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
+
+    colorIndex = 0
     for pair in pairs:
+        if unique_color:
+            colorVal = scalarMap.to_rgba(colorIndex)
+        else:
+            colorVal = 'r'
+        colorIndex += 1
         point_a = (pair.corner1.x, pair.corner1.y)
         point_b = (pair.corner2.x + width, pair.corner2.y)
-        connection = ConnectionPatch(point_a, point_b, "data", edgecolor='r', linewidth=1)
+        connection = ConnectionPatch(point_a, point_b, "data", edgecolor=colorVal, linewidth=1)
         ax.add_artist(connection)
 
     plt.show()

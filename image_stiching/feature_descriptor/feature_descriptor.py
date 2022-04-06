@@ -185,14 +185,14 @@ def reject_outlier_pairs(pairs: List[Type[Pair]], m: Optional[float] = 2, width_
     distances = [pair.distance for pair in pairs]
     mean = np.mean(distances)
     std = np.std(distances)
-    i = np.array([abs(pair.distance - mean) < m * std for pair in pairs])
+    i = np.array([abs(pair.distance - mean) <= m * std for pair in pairs])
     pairs = pairs[i]
 
     # gradient outlier detection
     slopes = [pair.cal_gradient(width_offset=width_offset) for pair in pairs]
     mean = np.mean(slopes)
     std = np.std(slopes)
-    i = np.array([abs(pair.cal_gradient(width_offset=width_offset) - mean) < m * std for pair in pairs])
+    i = np.array([abs(pair.cal_gradient(width_offset=width_offset) - mean) <= m * std for pair in pairs])
     pairs = pairs[i]
 
     return pairs
