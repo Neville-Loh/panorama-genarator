@@ -19,8 +19,8 @@ def prepareMatchingImage(left_pixel_array, right_pixel_array, image_width, image
     return matchingImage
 
 
-def plot_side_by_side_pairs(left_px_array: List, right_px_array: List, pairs: List[Type[Pair]], title: str = None, unique_color: bool = True) \
-        -> None:
+def plot_side_by_side_pairs(left_px_array: List, right_px_array: List, pairs: List[Pair], title: str = None,
+                            unique_color: bool = True) -> None:
     """ Plot a side by side image
     Parameters
     ----------
