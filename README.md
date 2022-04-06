@@ -55,8 +55,8 @@ usage: python3 CS773StitchingSkeleton.py [-h] [-n N_CORNER] [-a ALPHA] [-w WINSI
                [-or ENABLE_OUTLIER_REJECTION] [-orm OUTLIER_REJECTION_STD]
                input input2
 ```
-## Arguments
-### Quick reference table
+# Arguments
+## Quick reference table
 |Short |Long                             |Default|Description                                                                                                                                                                                                                                                                                        |
 |------|---------------------------------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |`-h`  |`--help`                         |       |show this help message and exit                                                                                                                                                                                                                                                                    |
@@ -73,21 +73,21 @@ usage: python3 CS773StitchingSkeleton.py [-h] [-n N_CORNER] [-a ALPHA] [-w WINSI
 
 
 
-### Example call with arguments
+## Example call with arguments
 ```
 python3 CS773StitchingSkeleton.py images/panoramaStitching/oxford_left_berg_loh_01.png images/panoramaStitching/oxford_right_berg_loh_01.png -n 2000
 ```
 
 
 
-## Results:
+# Results:
 
-### Main Task: Normalized Cross Correlation (NCC) based brute force matching using a precomputed axis-aligned descriptor.
+## Main Task: Normalized Cross Correlation (NCC) based brute force matching using a precomputed axis-aligned descriptor.
 
 ![The unfiltered output of our normalized cross correlation descriptor matching.](./images/NCC_OUTPUTS/MOUNTAIN_NCC_Unfiltered.png)
 
 
-### Extension 1: Optimisation of the NCC Matching
+## Extension 1: Optimisation of the NCC Matching
 We performed a number of performance optimisations to decrease runtime of our NCC. 
 Additionally, using the intuition that our panoramas would be unlikely to experience drastic rotation around the z axis, 
 we made the assumption that the length and gradiant of the lines connecting features should be tightly distributed. We used 
@@ -100,7 +100,7 @@ identify true and false positive matches.
 ![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
 for a pair of images suitable for a landscape panorama.](./images/NCC_OUTPUTS/MOUNTAIN_NCC_Filtered.png)
 
-### Extension 2: Comparison with HOG feature detector.
+## Extension 2: Comparison with HOG feature detector.
 As our second extension, we researched implementations of Histogram of Oriented gradients, and combined and modified 
 existing implementations of the HOG feature detector to fit into our workflow, allowing comparison
 with our existing image sets. 
@@ -108,10 +108,15 @@ with our existing image sets.
 ![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
 for a pair of images suitable for a landscape panorama.](./images/HOG_OUTPUTS/HOG_MOUNTAIN_Crop_negative.png)
 
-### Extension 3: Comparison with SIFT feature detector.
+## Extension 3: Comparison with SIFT feature detector.
 As our third extension, we utilised the VLFeat open source library to more easily implement a SIFT feature detector. 
 This implementation was used to perform the same tests as our two NCC implementations and HOG implementation, for a comparison
 of different feature detectors across a common image set.
 ![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
 for a pair of images suitable for a landscape panorama.](./images/SIFT_OUTPUTS/MOUNTAINT_SWIFT_FEATURES.png)
+
+## Extension 4: Parameter exploration and optimisation for different subjects.
+Continuing on from Phase 1, we had a number of python packages that automated the application of our feature detectors and matching algorithms, and that would produce simple statistical analyses. It is interesting to note that only after two iterations of a relatively small number of different implementations, the number of combinations of parameters and methods already yields tens of thousands of possible experimental conditions. Given the focus of this assignment was on NCC, we chose to focus our optimisation on NCC parameters, and considered six thresholds (0.999, 0.99, 0.9, 0.5, 0.1, 0.01) and seven windows radii (3, 5, 7, 9, 11, 15, 21) for two different implementations of NCC (Berg-Loh and Solem) over three pairs of images (Tongariro, Oxford, Playground) for a large but manageable collection of 252 experimental conditions. Notably, not all combinations yielded matched pairs, helpfully shrinking our data set. Additionally we performed "reasonability tests" along the way, including running the same image for both left and right channels, or unrelated images. Generally, under reasonable values, this produced the desired result of a large and tight distribution (for mapping an image to itself) and no matched pairs (for the unrelated images). 
+![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
+for a pair of images suitable for a landscape panorama.](./images/NCCParamTuning.gif)
 
