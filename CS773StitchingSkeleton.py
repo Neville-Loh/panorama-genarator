@@ -173,7 +173,7 @@ def main():
         parser.add_argument('-or', '--enable_outlier_rejection',
                             type=bool,
                             help='Enable outlier rejection. If nothing is supplied, the default is set to True',
-                            default=False)
+                            default=True)
 
         # Outlier Rejection M, float Optional
         parser.add_argument('-orm', '--outlier_rejection_std',
