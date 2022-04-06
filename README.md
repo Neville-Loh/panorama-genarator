@@ -62,11 +62,11 @@ usage: python3 CS773StitchingSkeleton.py [-h] [-n N_CORNER] [-a ALPHA] [-w WINSI
 |`-h`  |`--help`                         |       |show this help message and exit                                                                                                                                                                                                                                                                    |
 |`-n`  |`--n_corner`                     |`1000` |Number of corner output by the algorithm. The output image will contain n corners with the strongest response. If nothing is supplied, default to 1000                                                                                                                                             |
 |`-a`  |`--alpha`                        |`0.04` |The Harris Response constant alpha. Specifies the weighting between corner with strong with single direction and multi-direction. A higher alpha will result in less difference between response of ingle direction and multi-direction shift in intensity. If nothing is supplied, default to 0.04|
-|`-w`  |`--winsize`                      |`5`    |Gaussian windows size which applied the the squared and mix derivative of the image.A higher windows size will result in higher degree of smoothing, If nothing is supplied, the default widows size is set to 5.                                                                                  |
-|`-ph` |`--plot_harris_corner`           |       |Plot the Harris corner response. If nothing is supplied, the default is set to False                                                                                                                                                                                                               |
+|`-w`  |`--winsize`                      |`5`    |Gaussian windows size which applied the the squared and mix derivative of the image.A higher windows size will result in higher degree of smoothing, If nothing is supplied, the default widows size is set to 5.                                                                                  
+|`-ph` |`--plot_harris_corner`           |`False`       |Plot the Harris corner response. If nothing is supplied, the default is set to False                                                                                                                                                                                                               |
 |`-fds`|`--feature_descriptor_patch_size`|`15`   |The size of the feature descriptor patch. If nothing is supplied, the default patch size is set to 15.                                                                                                                                                                                             |
 |`-fdt`|`--feature_descriptor_threshold` |`0.9`  |The threshold of the feature descriptor. If nothing is supplied, the default threshold is set to 0.9                                                                                                                                                                                               |
-|`-or` |`--enable_outlier_rejection`     |       |Enable outlier rejection. If nothing is supplied, the default is set to True                                                                                                                                                                                                                       |
+|`-or` |`--enable_outlier_rejection`     |`True`       |Enable outlier rejection. If nothing is supplied, the default is set to True                                                                                                                                                                                                                       |
 |`-orm`|`--outlier_rejection_std`        |`1`    |The outlier rejection standard deviation to include. If nothing is supplied, the default is set to 1                                                                                                                                                                                               |
 
 
@@ -82,12 +82,12 @@ python3 CS773StitchingSkeleton.py images/panoramaStitching/oxford_left_berg_loh_
 
 ## Results:
 
-###Main Task: Normalized Cross Correlation (NCC) based brute force matching using a precomputed axis-aligned descriptor.
+### Main Task: Normalized Cross Correlation (NCC) based brute force matching using a precomputed axis-aligned descriptor.
 
 ![The unfiltered output of our normalized cross correlation descriptor matching.](./images/NCC_OUTPUTS/MOUNTAIN_NCC_Unfiltered.png)
 
 
-###Extension 1: Optimisation of the NCC Matching
+### Extension 1: Optimisation of the NCC Matching
 We performed a number of performance optimisations to decrease runtime of our NCC. 
 Additionally, using the intuition that our panoramas would be unlikely to experience drastic rotation around the z axis, 
 we made the assumption that the length and gradiant of the lines connecting features should be tightly distributed. We used 
@@ -100,7 +100,7 @@ identify true and false positive matches.
 ![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
 for a pair of images suitable for a landscape panorama.](./images/NCC_OUTPUTS/MOUNTAIN_NCC_Filtered.png)
 
-###Extension 2: Comparison with HOG feature detector.
+### Extension 2: Comparison with HOG feature detector.
 As our second extension, we researched implementations of Histogram of Oriented gradients, and combined and modified 
 existing implementations of the HOG feature detector to fit into our workflow, allowing comparison
 with our existing image sets. 
@@ -108,7 +108,7 @@ with our existing image sets.
 ![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
 for a pair of images suitable for a landscape panorama.](./images/HOG_OUTPUTS/HOG_MOUNTAIN_Crop_negative.png)
 
-###Extension 3: Comparison with SIFT feature detector.
+### Extension 3: Comparison with SIFT feature detector.
 As our third extension, we utilised the VLFeat open source library to more easily implement a SIFT feature detector. 
 This implementation was used to perform the same tests as our two NCC implementations and HOG implementation, for a comparison
 of different feature detectors across a common image set.
