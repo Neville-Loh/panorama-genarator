@@ -12,7 +12,8 @@ import imageProcessing.smoothing as IPSmooth
 from image_stiching.feature_descriptor.feature_descriptor import match_corner_by_ncc, reject_outlier_pairs
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
-from image_stiching.stiching import stitch
+from image_stiching.stiching import stitch, find_homo, test_homo
+from image_stiching.util.save_object import save_object_at_location, load_object_at_location
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
 MOUNTAIN_LEFT = "./images/panoramaStitching/tongariro_left_01.png"
@@ -104,6 +105,11 @@ def basic_comparison(histogram=False):
         assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
                                                                                        filtered_distance)
 
+    print(pairs)
+    save_object_at_location("stuff.txt", pairs)
+
+    print(load_object_at_location("stuff.txt"))
+
 
 def main():
     # Retrieve all command line argument
@@ -112,7 +118,9 @@ def main():
 
     # If there is no argument, compute a basic comparison with default image
     if len(args) == 0 and len(opts) == 0:
-        basic_comparison()
+        #basic_comparison()
+        #find_homo(None)
+        test_homo()
 
     # Parse all additional argument if there is any
     else:
@@ -187,7 +195,7 @@ def main():
         # Compute and plot Harris Corner with optional or default values
         img = filenameToSmoothedAndScaledpxArray(args['input1'])
         img2 = filenameToSmoothedAndScaledpxArray(args['input2'])
-        stitch(
+        pair = stitch(
             left_px_array=img,
             right_px_array=img2,
             n_corner=args['n_corner'],
@@ -200,6 +208,11 @@ def main():
             outlier_rejection_m=args['outlier_rejection_std'],
             plot_result=True,
         )
+        print(pair)
+        save_object_at_location("/out/stuff", pair)
+
+        print(load_object_at_location("/out/stuff"))
+
 
 
 if __name__ == "__main__":
