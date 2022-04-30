@@ -105,10 +105,10 @@ def basic_comparison(histogram=False):
         assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
                                                                                        filtered_distance)
 
-    print(pairs)
-    save_object_at_location("stuff.txt", pairs)
-
-    print(load_object_at_location("stuff.txt"))
+    # print(pairs)
+    # save_object_at_location("stuff.txt", pairs)
+    #
+    # print(load_object_at_location("stuff.txt"))
 
 
 def main():
@@ -194,9 +194,9 @@ def main():
         # Compute and plot Harris Corner with optional or default values
         img = filenameToSmoothedAndScaledpxArray(args['input1'])
         img2 = filenameToSmoothedAndScaledpxArray(args['input2'])
-        pair = stitch(
-            left_px_array=img,
-            right_px_array=img2,
+        stitch(
+            left_px_array_path=img,
+            right_px_array_path=img2,
             n_corner=args['n_corner'],
             alpha=args['alpha'],
             gaussian_window_size=args['winsize'],
@@ -206,11 +206,9 @@ def main():
             enable_outlier_rejection=args['enable_outlier_rejection'],
             outlier_rejection_m=args['outlier_rejection_std'],
             plot_result=True,
+            left_source_image_path=args['input1'],
+            right_source_image_path=args['input2'],
         )
-        print(pair)
-        save_object_at_location("/out/stuff", pair)
-
-        print(load_object_at_location("/out/stuff"))
 
 
 
