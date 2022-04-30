@@ -96,7 +96,7 @@ def stitch(
 
 def test_homo():
     pairs = list(load_object_at_location("stuff.txt"))
-    result = ransac(pairs, 15000, 0.1)
+    result = ransac(pairs, 15000, 1)
     h = find_homo(result)
 
     # get color image
@@ -144,7 +144,7 @@ def test_homo():
                     warped_image[y][x] = [r, g, b]
 
                     if r == -1:
-                        warped_image[y][x] = rgb_right_image[y][x]
+                        warped_image[y][x] = [0, 0, 0]
 
     plt.imshow(warped_image)
     plt.show()
