@@ -119,7 +119,6 @@ def main():
     # If there is no argument, compute a basic comparison with default image
     if len(args) == 0 and len(opts) == 0:
         #basic_comparison()
-        #find_homo(None)
         test_homo()
 
     # Parse all additional argument if there is any
