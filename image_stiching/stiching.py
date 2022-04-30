@@ -95,14 +95,8 @@ def stitch(
 
 
 def test_homo():
-    # pairs = generate_pairs_array()
-
     pairs = list(load_object_at_location("stuff.txt"))
-    # print(pairs)
-    random.seed(10)
-    result = ransac(pairs, 15000, 0.1)
-    np.set_printoptions(suppress=True)
-    print([[(p.corner1.x, p.corner1.y), (p.corner2.x, p.corner2.y)] for p in result])
+    result = ransac(pairs, 15000, 1)
     h = find_homo(result)
 
     # get color image
@@ -124,44 +118,34 @@ def test_homo():
             # if source point is in left image
 
             if x < image_width:
-                # mapped point is outside left image
-                if is_outside(mapped_point, image_height, image_width):
-                    # take left pixel
-                    warped_image[y][x] = rgb_left_image[y][x]
-                    pass
-
-                elif is_inside(mapped_point, image_height, image_width):
+                # mapped point is within left image
+                if within(mapped_point, image_height, image_width):
                     # Blend color value from left and interpolated value from right image
                     r, g, b = interpolation_pixel(mapped_point[0], mapped_point[1], rgb_right_image)
-                    r_left = rgb_left_image[:, :, 0][y][x]
-                    g_left = rgb_left_image[:, :, 1][y][x]
-                    b_left = rgb_left_image[:, :, 2][y][x]
+                    r_left, g_left, b_left = rgb_left_image[y][x]
 
-                    warped_image[y][x][0] = (r + r_left) / 2
-                    warped_image[y][x][1] = (g + g_left) / 2
-                    warped_image[y][x][2] = (b + b_left) / 2
+                    if r == -1:
+                        warped_image[y][x] = rgb_left_image[y][x]
+                        continue
 
                     threshold = 50
                     if r_left - r > threshold or g_left - g > threshold or b_left - b > threshold:
-                        warped_image[y][x][0] = r
-                        warped_image[y][x][1] = g
-                        warped_image[y][x][2] = b
+                        warped_image[y][x] = [r, g, b]
+                    else:
+                        warped_image[y][x] = [(r + r_left) / 2, (g + g_left) / 2, (b + b_left) / 2]
 
+                else:
+                    warped_image[y][x] = rgb_left_image[y][x]  # take left pixel
 
             else:  # source point is outside left image
-                if is_outside(mapped_point, image_height, image_width):
-                    # take black pixel
-                    warped_image[y][x] = [0, 0, 0]
-                    pass
-
-                elif is_inside(mapped_point, image_height, image_width):
+                if within(mapped_point, image_height, image_width):
                     # take right pixel
                     r, g, b = interpolation_pixel(mapped_point[0], mapped_point[1], rgb_right_image)
-                    warped_image[y][x][0] = r
-                    warped_image[y][x][1] = g
-                    warped_image[y][x][2] = b
+                    warped_image[y][x] = [r, g, b]
 
-                    ## take pixel from right image
+                    if r == -1:
+                        warped_image[y][x] = [0, 0, 0]
+
     plt.imshow(warped_image)
     plt.show()
 
@@ -175,38 +159,21 @@ def interpolation_pixel(x: float, y: float, rgb_source_image: np.ndarray):
     return r, g, b
 
 
-# check if point is outside image
-def is_outside(point, image_height, image_width):
-    return point[0] < 0 or point[0] >= image_width or point[1] < 0 or point[1] >= image_height
-
-
-def is_inside(point, image_height, image_width):
+def within(point, image_height, image_width):
     return 0 <= point[0] < image_width and 0 <= point[1] < image_height
 
 
 def find_homo(pairs: List[Pair]):
-    # pairs = [
-    #     Pair(Corner((37, 33), 0), Corner((36, 10), 0), 0),
-    #     Pair(Corner((54, 67), 0), Corner((53, 39), 0), 0),
-    #     Pair(Corner((56, 56), 0), Corner((56, 27), 0), 0),
-    #     Pair(Corner((73, 58), 0), Corner((73, 29), 0), 0),
-    # ]
-    # print(pairs[0].corner1.x, pairs[0].corner1.y)
     matrix = []
     for pair in pairs:
         x1, y1, x2, y2 = pair.corner1.x, pair.corner1.y, pair.corner2.x, pair.corner2.y
-        # print(x1, y1, x2, y2)
         matrix.append([0, 0, 0, x1, y1, 1, -y2 * x1, -y2 * y1, -y2])
         matrix.append([x1, y1, 1, 0, 0, 0, -x2 * x1, -x2 * y1, -x2])
 
     matrix = np.array(matrix)
-    pprint(matrix)
 
     [u, s, vt] = np.linalg.svd(matrix)
     homography = vt[-1].reshape(3, 3)
-
-    # print(homography)
-    # print(homography[-1, -1])
     # Normalization
     homography = (1 / homography[-1, -1]) * homography
     return homography
@@ -257,8 +224,7 @@ def compute_inliers(homography, pairs, threshold):
 
 def compute_bilinear_interpolation(location_x, location_y, pixel_array, image_width, image_height):
     if location_x < 0 or location_y < 0 or location_x > image_width - 1 or location_y > image_height - 1:
-        # print(location_x, location_y, 255)
-        return 0
+        return -1
 
     interpolated_value = 0.0
 
