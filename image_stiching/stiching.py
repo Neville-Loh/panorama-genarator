@@ -1,10 +1,13 @@
 from typing import List, Optional
+import os
 
-from data_exploration.image_plot import plot_side_by_side_pairs
 from image_stiching.feature_descriptor.feature_descriptor import match_corner_by_ncc, reject_outlier_pairs
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
-from image_stiching.pair import Pair
+from image_stiching.homography.homography import fit_transform_homography
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
+from matplotlib import pyplot as plt
+
+from image_stiching.util.save_object import load_object_at_location, save_object_at_location, get_file_name_from_path
 
 
 @measure_elapsed_time
@@ -20,7 +23,13 @@ def stitch(
         enable_outlier_rejection: Optional[bool] = True,
         outlier_rejection_m: Optional[float] = 1,
         plot_result: Optional[bool] = False,
-) -> List[Pair]:
+        left_source_path: Optional[str] = None,
+        right_source_path: Optional[str] = None,
+        ransac_iteration_input: Optional[int] = 20000,
+        ransac_threshold_input: Optional[float] = 1,
+        cache_result: Optional[bool] = True,
+        save_output_as_file: Optional[bool] = False,
+) -> None:
     """
     Stitch two images together.
 
@@ -55,29 +64,71 @@ def stitch(
         The list of pairs of the matched points.
     """
 
-    height, width = len(left_px_array), len(left_px_array[0])
+    def compute_pairs():
+        left_corners = compute_harris_corner(left_px_array,
+                                             n_corner=n_corner,
+                                             alpha=alpha,
+                                             gaussian_window_size=gaussian_window_size,
+                                             plot_image=plot_harris_corner)
 
-    left_corners = compute_harris_corner(left_px_array,
-                                         n_corner=n_corner,
-                                         alpha=alpha,
-                                         gaussian_window_size=gaussian_window_size,
-                                         plot_image=plot_harris_corner)
+        right_corners = compute_harris_corner(right_px_array,
+                                              n_corner=1000,
+                                              alpha=0.04,
+                                              gaussian_window_size=7,
+                                              plot_image=False)
 
-    right_corners = compute_harris_corner(right_px_array,
-                                          n_corner=1000,
-                                          alpha=0.04,
-                                          gaussian_window_size=7,
-                                          plot_image=False)
+        # get the best matches for each corner in the left image
+        return match_corner_by_ncc((left_px_array, left_corners),
+                                   (right_px_array, right_corners),
+                                   feature_descriptor_patch_size=feature_descriptor_patch_size,
+                                   threshold=feature_descriptor_threshold)
 
-    # get the best matches for each corner in the left image
-    pairs = match_corner_by_ncc((left_px_array, left_corners),
-                                (right_px_array, right_corners),
-                                feature_descriptor_patch_size=feature_descriptor_patch_size,
-                                threshold=feature_descriptor_threshold)
+    if cache_result:
+        try:
+            pairs = load_object_at_location(
+                os.path.join(
+                    ".",
+                    "cache",
+                    f"%s_%s_cache.pkl" % (
+                        get_file_name_from_path(left_source_path),
+                        get_file_name_from_path(right_source_path)
+                    )
+                )
+            )
+        except FileNotFoundError:
+
+            # compute the harris corner
+            pairs = compute_pairs()
+
+            # Save the result
+            save_object_at_location(
+                os.path.join(
+                    ".",
+                    "cache",
+                    f"%s_%s_cache.pkl" % (
+                        get_file_name_from_path(left_source_path),
+                        get_file_name_from_path(right_source_path)
+                    )
+                ),
+                pairs
+            )
+
+    else:
+        pairs = compute_pairs()
+
+    # remove the outliers
     if enable_outlier_rejection:
-        pairs = reject_outlier_pairs(pairs, width_offset=width, m=outlier_rejection_m)
-    if plot_result:
-        plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Result image with side by side comparison",
-                                unique_color=False)
+        pairs = reject_outlier_pairs(pairs, width_offset=len(left_px_array[0]), m=outlier_rejection_m)
 
-    return pairs
+    # compute homography
+    image = fit_transform_homography(list(pairs),
+                                     source_left_image_path=left_source_path,
+                                     source_right_image_path=right_source_path,
+                                     ransac_iteration=ransac_iteration_input,
+                                     ransac_threshold=ransac_threshold_input)
+
+    plt.imshow(image)
+    plt.show()
+
+    if save_output_as_file:
+        plt.imsave("output.png", image)
