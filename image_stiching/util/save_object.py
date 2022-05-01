@@ -12,7 +12,7 @@ def save_object_at_location(location, obj):
 def load_object_at_location(location):
     with open(location, 'rb+') as file:
         obj = pickle.load(file)
-        print(f'[INFO] Loading result as cache to %s' % location)
+        print(f'[INFO] Loading result as cache from %s' % location)
         # After config_dictionary is read from file
         return obj
 

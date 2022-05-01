@@ -1,4 +1,3 @@
-import random
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -11,6 +10,10 @@ from itertools import combinations
 
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
 
+"""
+This module contains the homography computation and the RANSAC fitting of the program.
+@Author: Neville Loh
+"""
 
 
 @measure_elapsed_time
@@ -100,11 +103,37 @@ def compute_bilinear_interpolation(location_x, location_y, pixel_array, image_wi
     return interpolated_value
 
 
-def within(point, image_height, image_width):
+def within(point: np.ndarray, image_height: int, image_width: int) -> bool:
+    """
+    Check if a point is within the image
+    Parameters
+    ----------
+    point: np.ndarray
+        point to check
+    image_height: int
+        height of the image
+    image_width: int
+        width of the image
+    Returns
+    -------
+    bool
+        True if point is within the image, False otherwise
+    """
     return 0 <= point[0] < image_width and 0 <= point[1] < image_height
 
 
-def compute_homography(pairs: List[Pair]):
+def compute_homography(pairs: List[Pair]) -> np.ndarray:
+    """
+    Compute the homography matrix
+    Parameters
+    ----------
+    pairs: List[Pair]
+        list of pairs of points
+    Returns
+    -------
+    np.ndarray
+        homography matrix
+    """
     matrix = []
     for pair in pairs:
         x1, y1, x2, y2 = pair.corner1.x, pair.corner1.y, pair.corner2.x, pair.corner2.y
@@ -119,7 +148,22 @@ def compute_homography(pairs: List[Pair]):
 
 
 @measure_elapsed_time
-def ransac(pairs: List[Pair], iteration: int, threshold: float):
+def ransac(pairs: List[Pair], iteration: int, threshold: float) -> List[Pair]:
+    """
+    RANSAC algorithm
+    Parameters
+    ----------
+    pairs: List[Pair]
+        list of pairs of points
+    iteration: int
+        number of iterations
+    threshold: float
+        threshold for inliers
+    Returns
+    -------
+    List[Pair]
+        list of pairs of points that are inliers
+    """
     result = []
     while iteration > 0:
         sample = random.sample(pairs, 4)
@@ -138,12 +182,42 @@ def ransac(pairs: List[Pair], iteration: int, threshold: float):
     return result
 
 
-def compute_map_point(x, y, homography):
+def compute_map_point(x: int, y: int, homography: np.ndarray) -> np.ndarray:
+    """
+    Compute the map point
+    Parameters
+    ----------
+    x: int
+        x coordinate
+    y: int
+        y coordinate
+    homography: np.ndarray
+        homography matrix
+    Returns
+    -------
+    np.ndarray
+        the matrix that contains the map point
+    """
     p_prime = np.dot(homography, np.array([x, y, 1]))
     return (1 / p_prime[-1]) * p_prime
 
 
-def compute_inliers(homography, pairs, threshold):
+def compute_inliers(homography: np.ndarray, pairs: List[Pair], threshold: float) -> List[Pair]:
+    """
+    Compute the inliers
+    Parameters
+    ----------
+    homography: np.ndarray
+        homography matrix
+    pairs: List[Pair]
+        list of pairs of points
+    threshold: float
+        threshold for inliers
+    Returns
+    -------
+    List[Pair]
+        list of pairs of points that are inliers
+    """
     inliers = []
     for pair in pairs:
         p1 = np.array([pair.corner1.x, pair.corner1.y, 1])
@@ -161,7 +235,18 @@ def compute_inliers(homography, pairs, threshold):
     return inliers
 
 
-def points_are_collinear(corners: Tuple[Corner, Corner, Corner]):
+def points_are_collinear(corners: Tuple[Corner, Corner, Corner]) -> bool:
+    """
+    Check if the points are collinear
+    Parameters
+    ----------
+    corners: Tuple[Corner, Corner, Corner]
+        tuple of corners
+    Returns
+    -------
+    bool
+        True if the points are collinear, False otherwise
+    """
     p1, p2, p3 = corners
     area_of_triangle = 0.5 * (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y))
     return area_of_triangle < 1e-5
