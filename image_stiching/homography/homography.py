@@ -10,17 +10,17 @@ import random
 from matplotlib import pyplot as plt
 from itertools import product, permutations, combinations
 
+from image_stiching.performance_evaulation.timer import measure_elapsed_time
 from image_stiching.util.save_object import load_object_at_location
 
 
+@measure_elapsed_time
 def fit_transform_homography(pairs: List[Pair],
-                   ransac_iteration: Optional[int] = 20000,
-                   ransac_threshold: Optional[float] = 1.0,
-                   source_left_image_path: Optional[str] = None,
-                   source_right_image_path: Optional[str] = None) \
+                             ransac_iteration: Optional[int] = 20000,
+                             ransac_threshold: Optional[float] = 1.0,
+                             source_left_image_path: Optional[str] = None,
+                             source_right_image_path: Optional[str] = None) \
         -> np.ndarray:
-
-
     result = ransac(pairs, ransac_iteration, ransac_threshold)
     h = compute_homography(result)
 
@@ -119,6 +119,7 @@ def compute_homography(pairs: List[Pair]):
     return homography
 
 
+@measure_elapsed_time
 def ransac(pairs: List[Pair], iteration: int, threshold: float):
     result = []
     while iteration > 0:
@@ -159,8 +160,6 @@ def compute_inliers(homography, pairs, threshold):
         if distance < threshold:
             inliers.append(pair)
     return inliers
-
-
 
 
 def points_are_collinear(corners: Tuple[Corner, Corner, Corner]):

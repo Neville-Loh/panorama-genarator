@@ -11,8 +11,9 @@ import imageProcessing.pixelops as IPPixelOps
 import imageProcessing.smoothing as IPSmooth
 from image_stiching.feature_descriptor.feature_descriptor import match_corner_by_ncc, reject_outlier_pairs
 from image_stiching.harris_conrner_detection.harris import compute_harris_corner
+from image_stiching.homography.homography import fit_transform_homography
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
-from image_stiching.stiching import stitch, find_homo, test_homo
+from image_stiching.stiching import stitch
 from image_stiching.util.save_object import save_object_at_location, load_object_at_location
 
 CHECKER_BOARD = "./images/cornerTest/checkerboard.png"
@@ -58,52 +59,64 @@ def filenameToSmoothedAndScaledpxArray(filename):
 
 
 def basic_comparison(histogram=False):
-    left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
-    right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
 
-    height, width = len(left_px_array), len(left_px_array[0])
+    try :
+        pairs = load_object_at_location("default_pairs_cache.pkl")
+    except FileNotFoundError:
+        left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
+        right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
 
-    left_corners = compute_harris_corner(left_px_array,
-                                         n_corner=1000,
-                                         alpha=0.04,
-                                         gaussian_window_size=7,
-                                         plot_image=False)
+        height, width = len(left_px_array), len(left_px_array[0])
 
-    right_corners = compute_harris_corner(right_px_array,
-                                          n_corner=1000,
-                                          alpha=0.04,
-                                          gaussian_window_size=7,
-                                          plot_image=False)
+        left_corners = compute_harris_corner(left_px_array,
+                                             n_corner=1000,
+                                             alpha=0.04,
+                                             gaussian_window_size=7,
+                                             plot_image=False)
 
-    # get the best matches for each corner in the left image
-    pairs = match_corner_by_ncc((left_px_array, left_corners),
-                                (right_px_array, right_corners),
-                                feature_descriptor_patch_size=15,
-                                threshold=0.9)
+        right_corners = compute_harris_corner(right_px_array,
+                                              n_corner=1000,
+                                              alpha=0.04,
+                                              gaussian_window_size=7,
+                                              plot_image=False)
 
-    slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
-    fig1, ax1 = pyplot.subplots(1, 2)
-    ax1[0].set_title('Before rejection')
-    ax1[0].boxplot(slope)
+        # get the best matches for each corner in the left image
+        pairs = match_corner_by_ncc((left_px_array, left_corners),
+                                    (right_px_array, right_corners),
+                                    feature_descriptor_patch_size=15,
+                                    threshold=0.9)
+        save_object_at_location("default_pairs_cache.pkl", pairs)
 
-    s = reject_outliers(np.array(slope))
-    ax1[1].set_title('After rejection')
-    ax1[1].boxplot(s)
+    # get the homography matrix
+    result_image = fit_transform_homography(pairs,
+                                            source_left_image_path=MOUNTAIN_LEFT,
+                                            source_right_image_path=MOUNTAIN_RIGHT)
+    pyplot.imshow(result_image)
     pyplot.show()
 
-    unfiltered_distance = [pair.distance for pair in pairs]
-
-    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection", unique_color=False)
-    print(f'len of pairs before = {len(pairs)}')
-    pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
-    print(f'len of pairs after = {len(pairs)}')
-    plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection", unique_color=False)
-
-    filtered_distance = [pair.distance for pair in pairs]
-
-    if histogram:
-        assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
-                                                                                       filtered_distance)
+    # slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
+    # fig1, ax1 = pyplot.subplots(1, 2)
+    # ax1[0].set_title('Before rejection')
+    # ax1[0].boxplot(slope)
+    #
+    # s = reject_outliers(np.array(slope))
+    # ax1[1].set_title('After rejection')
+    # ax1[1].boxplot(s)
+    # pyplot.show()
+    #
+    # unfiltered_distance = [pair.distance for pair in pairs]
+    #
+    # plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection", unique_color=False)
+    # print(f'len of pairs before = {len(pairs)}')
+    # pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
+    # print(f'len of pairs after = {len(pairs)}')
+    # plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection", unique_color=False)
+    #
+    # filtered_distance = [pair.distance for pair in pairs]
+    #
+    # if histogram:
+    #     assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
+    #                                                                                    filtered_distance)
 
     # print(pairs)
     # save_object_at_location("stuff.txt", pairs)
@@ -118,8 +131,8 @@ def main():
 
     # If there is no argument, compute a basic comparison with default image
     if len(args) == 0 and len(opts) == 0:
-        #basic_comparison()
-        test_homo()
+        basic_comparison()
+        #test_homo()
 
     # Parse all additional argument if there is any
     else:
@@ -195,8 +208,8 @@ def main():
         img = filenameToSmoothedAndScaledpxArray(args['input1'])
         img2 = filenameToSmoothedAndScaledpxArray(args['input2'])
         stitch(
-            left_px_array_path=img,
-            right_px_array_path=img2,
+            left_px_array=img,
+            right_px_array=img2,
             n_corner=args['n_corner'],
             alpha=args['alpha'],
             gaussian_window_size=args['winsize'],
@@ -206,8 +219,8 @@ def main():
             enable_outlier_rejection=args['enable_outlier_rejection'],
             outlier_rejection_m=args['outlier_rejection_std'],
             plot_result=True,
-            left_source_image_path=args['input1'],
-            right_source_image_path=args['input2'],
+            left_source_path=args['input1'],
+            right_source_path=args['input2'],
         )
 
 
