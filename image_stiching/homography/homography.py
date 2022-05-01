@@ -7,11 +7,10 @@ from image_stiching.corner import Corner
 from image_stiching.pair import Pair
 import imageIO.readwrite as IORW
 import random
-from matplotlib import pyplot as plt
-from itertools import product, permutations, combinations
+from itertools import combinations
 
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
-from image_stiching.util.save_object import load_object_at_location
+
 
 
 @measure_elapsed_time

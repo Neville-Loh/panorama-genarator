@@ -59,8 +59,7 @@ def filenameToSmoothedAndScaledpxArray(filename):
 
 
 def basic_comparison(histogram=False):
-
-    try :
+    try:
         pairs = load_object_at_location("default_pairs_cache.pkl")
     except FileNotFoundError:
         left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
@@ -132,7 +131,6 @@ def main():
     # If there is no argument, compute a basic comparison with default image
     if len(args) == 0 and len(opts) == 0:
         basic_comparison()
-        #test_homo()
 
     # Parse all additional argument if there is any
     else:
@@ -222,7 +220,6 @@ def main():
             left_source_path=args['input1'],
             right_source_path=args['input2'],
         )
-
 
 
 if __name__ == "__main__":
