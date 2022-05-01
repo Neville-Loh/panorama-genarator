@@ -29,7 +29,9 @@
 # SOFTWARE.
 
 import imageIO.png
+import numpy as np
 from imageProcessing.utilities import rgbToGreyscale
+
 
 def readGreyscaleImage(input_filename):
     image_reader = imageIO.png.Reader(filename=input_filename)
@@ -121,6 +123,11 @@ def readRGBImageAndConvertToGreyscalePixelArray(input_filename):
 
     return (image_width, image_height, pixel_array)
 
+
+def readRGBImageAndConvertToNdArray(input_filename):
+    (image_width, image_height, pixel_array_r, pixel_array_g, pixel_array_b) \
+        = readRGBImageToSeparatePixelArrays(input_filename)
+    return np.dstack([pixel_array_r, pixel_array_g, pixel_array_b])
 
 def writeGreyscalePixelArraytoPNG(output_filename, pixel_array, image_width, image_height):
     # now write the pixel array as a greyscale png
