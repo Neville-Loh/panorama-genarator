@@ -1,4 +1,3 @@
-import random
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -7,11 +6,14 @@ from image_stiching.corner import Corner
 from image_stiching.pair import Pair
 import imageIO.readwrite as IORW
 import random
-from matplotlib import pyplot as plt
-from itertools import product, permutations, combinations
+from itertools import combinations, product
 
 from image_stiching.performance_evaulation.timer import measure_elapsed_time
-from image_stiching.util.save_object import load_object_at_location
+
+"""
+This module contains the homography computation and the RANSAC fitting of the program.
+@Author: Neville Loh
+"""
 
 
 @measure_elapsed_time
@@ -21,54 +23,70 @@ def fit_transform_homography(pairs: List[Pair],
                              source_left_image_path: Optional[str] = None,
                              source_right_image_path: Optional[str] = None) \
         -> np.ndarray:
+    """
+    Fit the homography using RANSAC and transform the image
+    Return the combined image after the transformation
+    Parameters
+    ----------
+    pairs: List[Pair]
+        list of matching corner to use for the homography computation
+    ransac_iteration: Optional[int]
+        number of iteration for the RANSAC algorithm
+    ransac_threshold: Optional[float]
+        threshold for the RANSAC algorithm
+    source_left_image_path: Optional[str]
+        path to the left image
+    source_right_image_path: Optional[str]
+        path to the right image
+    Returns
+    -------
+    np.ndarray
+        combined image after the transformation
+    """
     result = ransac(pairs, ransac_iteration, ransac_threshold)
     h = compute_homography(result)
 
     # read source images
-    (image_width, image_height, pixel_array_r, pixel_array_g, pixel_array_b) \
-        = IORW.readRGBImageToSeparatePixelArrays(source_left_image_path)
-    rgb_left_image = np.dstack([pixel_array_r, pixel_array_g, pixel_array_b])
-
-    (image_width, image_height, pixel_array_r, pixel_array_g, pixel_array_b) = \
-        IORW.readRGBImageToSeparatePixelArrays(source_right_image_path)
-    rgb_right_image = np.dstack([pixel_array_r, pixel_array_g, pixel_array_b])
+    rgb_left_image = IORW.readRGBImageAndConvertToNdArray(source_left_image_path)
+    rgb_right_image = IORW.readRGBImageAndConvertToNdArray(source_right_image_path)
+    image_width, image_height = len(rgb_left_image[0]), len(rgb_left_image)
 
     # create new canvas
     warped_image = np.zeros((image_height, image_width * 2, 3), dtype=np.uint8)
 
     # loop through x and y of a new canvas twice the width of the original image
-    for x in range(image_width * 2):
-        for y in range(image_height):
-            mapped_point = compute_map_point(x, y, h)
-            # if source point is in left image
-            if x < image_width:
-                # mapped point is within left image
-                if within(mapped_point, image_height, image_width):
-                    # Blend color value from left and interpolated value from right image
-                    r, g, b = interpolation_pixel(mapped_point[0], mapped_point[1], rgb_right_image)
-                    r_left, g_left, b_left = rgb_left_image[y][x]
+    for x, y in product(range(image_width * 2), range(image_height)):
 
-                    if r == -1:
-                        warped_image[y][x] = rgb_left_image[y][x]
-                        continue
+        mapped_point = compute_map_point(x, y, h)
+        # if source point is in left image
+        if x < image_width:
+            # mapped point is within left image
+            if within(mapped_point, image_height, image_width):
+                # Blend color value from left and interpolated value from right image
+                r, g, b = interpolation_pixel(mapped_point[0], mapped_point[1], rgb_right_image)
+                r_left, g_left, b_left = rgb_left_image[y][x]
 
-                    threshold = 50
-                    if r_left - r > threshold or g_left - g > threshold or b_left - b > threshold:
-                        warped_image[y][x] = [r, g, b]
-                    else:
-                        warped_image[y][x] = [(r + r_left) / 2, (g + g_left) / 2, (b + b_left) / 2]
+                if r == -1:
+                    warped_image[y][x] = rgb_left_image[y][x]
+                    continue
 
-                else:
-                    warped_image[y][x] = rgb_left_image[y][x]  # take left pixel
-
-            else:  # source point is outside left image
-                if within(mapped_point, image_height, image_width):
-                    # take right pixel
-                    r, g, b = interpolation_pixel(mapped_point[0], mapped_point[1], rgb_right_image)
+                threshold = 50
+                if r_left - r > threshold or g_left - g > threshold or b_left - b > threshold:
                     warped_image[y][x] = [r, g, b]
+                else:
+                    warped_image[y][x] = [(r + r_left) / 2, (g + g_left) / 2, (b + b_left) / 2]
 
-                    if r == -1:
-                        warped_image[y][x] = [0, 0, 0]
+            else:
+                warped_image[y][x] = rgb_left_image[y][x]  # take left pixel
+
+        else:  # source point is outside left image
+            if within(mapped_point, image_height, image_width):
+                # take right pixel
+                r, g, b = interpolation_pixel(mapped_point[0], mapped_point[1], rgb_right_image)
+                warped_image[y][x] = [r, g, b]
+
+                if r == -1:
+                    warped_image[y][x] = [0, 0, 0]
 
     return warped_image
 
@@ -101,11 +119,37 @@ def compute_bilinear_interpolation(location_x, location_y, pixel_array, image_wi
     return interpolated_value
 
 
-def within(point, image_height, image_width):
+def within(point: np.ndarray, image_height: int, image_width: int) -> bool:
+    """
+    Check if a point is within the image
+    Parameters
+    ----------
+    point: np.ndarray
+        point to check
+    image_height: int
+        height of the image
+    image_width: int
+        width of the image
+    Returns
+    -------
+    bool
+        True if point is within the image, False otherwise
+    """
     return 0 <= point[0] < image_width and 0 <= point[1] < image_height
 
 
-def compute_homography(pairs: List[Pair]):
+def compute_homography(pairs: List[Pair]) -> np.ndarray:
+    """
+    Compute the homography matrix
+    Parameters
+    ----------
+    pairs: List[Pair]
+        list of pairs of points
+    Returns
+    -------
+    np.ndarray
+        homography matrix
+    """
     matrix = []
     for pair in pairs:
         x1, y1, x2, y2 = pair.corner1.x, pair.corner1.y, pair.corner2.x, pair.corner2.y
@@ -120,7 +164,22 @@ def compute_homography(pairs: List[Pair]):
 
 
 @measure_elapsed_time
-def ransac(pairs: List[Pair], iteration: int, threshold: float):
+def ransac(pairs: List[Pair], iteration: int, threshold: float) -> List[Pair]:
+    """
+    RANSAC algorithm
+    Parameters
+    ----------
+    pairs: List[Pair]
+        list of pairs of points
+    iteration: int
+        number of iterations
+    threshold: float
+        threshold for inliers
+    Returns
+    -------
+    List[Pair]
+        list of pairs of points that are inliers
+    """
     result = []
     while iteration > 0:
         sample = random.sample(pairs, 4)
@@ -139,12 +198,42 @@ def ransac(pairs: List[Pair], iteration: int, threshold: float):
     return result
 
 
-def compute_map_point(x, y, homography):
+def compute_map_point(x: int, y: int, homography: np.ndarray) -> np.ndarray:
+    """
+    Compute the map point
+    Parameters
+    ----------
+    x: int
+        x coordinate
+    y: int
+        y coordinate
+    homography: np.ndarray
+        homography matrix
+    Returns
+    -------
+    np.ndarray
+        the matrix that contains the map point
+    """
     p_prime = np.dot(homography, np.array([x, y, 1]))
     return (1 / p_prime[-1]) * p_prime
 
 
-def compute_inliers(homography, pairs, threshold):
+def compute_inliers(homography: np.ndarray, pairs: List[Pair], threshold: float) -> List[Pair]:
+    """
+    Compute the inliers
+    Parameters
+    ----------
+    homography: np.ndarray
+        homography matrix
+    pairs: List[Pair]
+        list of pairs of points
+    threshold: float
+        threshold for inliers
+    Returns
+    -------
+    List[Pair]
+        list of pairs of points that are inliers
+    """
     inliers = []
     for pair in pairs:
         p1 = np.array([pair.corner1.x, pair.corner1.y, 1])
@@ -162,7 +251,18 @@ def compute_inliers(homography, pairs, threshold):
     return inliers
 
 
-def points_are_collinear(corners: Tuple[Corner, Corner, Corner]):
+def points_are_collinear(corners: Tuple[Corner, Corner, Corner]) -> bool:
+    """
+    Check if the points are collinear
+    Parameters
+    ----------
+    corners: Tuple[Corner, Corner, Corner]
+        tuple of corners
+    Returns
+    -------
+    bool
+        True if the points are collinear, False otherwise
+    """
     p1, p2, p3 = corners
     area_of_triangle = 0.5 * (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y))
     return area_of_triangle < 1e-5

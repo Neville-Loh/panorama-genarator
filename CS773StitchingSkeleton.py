@@ -1,6 +1,6 @@
 import sys
 import argparse
-import numpy as np
+import os
 from matplotlib import pyplot
 
 import assignment_two_extension.distancedistributions
@@ -59,9 +59,8 @@ def filenameToSmoothedAndScaledpxArray(filename):
 
 
 def basic_comparison(histogram=False):
-
-    try :
-        pairs = load_object_at_location("default_pairs_cache.pkl")
+    try:
+        pairs = load_object_at_location(os.path.join(".", "cache", "default_pairs_cache.pkl"))
     except FileNotFoundError:
         left_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_LEFT)
         right_px_array = filenameToSmoothedAndScaledpxArray(MOUNTAIN_RIGHT)
@@ -85,44 +84,17 @@ def basic_comparison(histogram=False):
                                     (right_px_array, right_corners),
                                     feature_descriptor_patch_size=15,
                                     threshold=0.9)
-        save_object_at_location("default_pairs_cache.pkl", pairs)
+        save_object_at_location(
+            os.path.join(".", "cache", "default_pairs_cache.pkl"),
+            pairs)
 
     # get the homography matrix
     result_image = fit_transform_homography(pairs,
                                             source_left_image_path=MOUNTAIN_LEFT,
                                             source_right_image_path=MOUNTAIN_RIGHT)
     pyplot.imshow(result_image)
+    print(f'[INFO] Showing the result image...')
     pyplot.show()
-
-    # slope = [pair.cal_gradient(width_offset=width) for pair in pairs]
-    # fig1, ax1 = pyplot.subplots(1, 2)
-    # ax1[0].set_title('Before rejection')
-    # ax1[0].boxplot(slope)
-    #
-    # s = reject_outliers(np.array(slope))
-    # ax1[1].set_title('After rejection')
-    # ax1[1].boxplot(s)
-    # pyplot.show()
-    #
-    # unfiltered_distance = [pair.distance for pair in pairs]
-    #
-    # plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="Before outlier rejection", unique_color=False)
-    # print(f'len of pairs before = {len(pairs)}')
-    # pairs = reject_outlier_pairs(pairs, width_offset=width, m=1)
-    # print(f'len of pairs after = {len(pairs)}')
-    # plot_side_by_side_pairs(left_px_array, right_px_array, pairs, title="After outlier rejection", unique_color=False)
-    #
-    # filtered_distance = [pair.distance for pair in pairs]
-    #
-    # if histogram:
-    #     assignment_two_extension.distancedistributions.generate_distance_distributions(unfiltered_distance,
-    #                                                                                    filtered_distance)
-
-    # print(pairs)
-    # save_object_at_location("stuff.txt", pairs)
-    #
-    # print(load_object_at_location("stuff.txt"))
-
 
 def main():
     # Retrieve all command line argument
@@ -132,7 +104,6 @@ def main():
     # If there is no argument, compute a basic comparison with default image
     if len(args) == 0 and len(opts) == 0:
         basic_comparison()
-        #test_homo()
 
     # Parse all additional argument if there is any
     else:
@@ -202,6 +173,8 @@ def main():
                                  'the default is set to 1',
                             default=1)
 
+
+
         args = vars(parser.parse_args())
 
         # Compute and plot Harris Corner with optional or default values
@@ -222,7 +195,6 @@ def main():
             left_source_path=args['input1'],
             right_source_path=args['input2'],
         )
-
 
 
 if __name__ == "__main__":
