@@ -4,7 +4,7 @@
 # The code has been modified to work with updated packages and python 3 vs. the original python 2 implementation.
 from pylab import *
 from scipy.ndimage import gaussian_filter
-from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
+from image_stitching import filenameToSmoothedAndScaledpxArray
 from data_exploration.image_plot import prepareMatchingImage
 
 CHECKER_BOARD = "../../images/cornerTest/checkerboard.png"

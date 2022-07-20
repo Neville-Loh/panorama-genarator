@@ -8,7 +8,7 @@ from functools import reduce
 import numpy as np
 import cv2
 from pylab import *
-from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
+from image_stitching import filenameToSmoothedAndScaledpxArray
 from data_exploration.image_plot import prepareMatchingImage
 
 CHECKER_BOARD = "../images/cornerTest/checkerboard.png"

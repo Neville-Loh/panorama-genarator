@@ -8,7 +8,7 @@ from numpy import argsort
 from matplotlib import colors as colors
 from matplotlib import cm as cmx
 
-from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
+from image_stitching import filenameToSmoothedAndScaledpxArray
 from image_stiching.harris_conrner_detection.SolemHarrisImplementation import compute_harris_response, get_harris_points
 
 CHECKER_BOARD = "../images/cornerTest/checkerboard.png"

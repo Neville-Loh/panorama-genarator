@@ -5,7 +5,7 @@ from matplotlib.patches import Circle, ConnectionPatch
 import numpy as np
 import sys
 
-from CS773StitchingSkeleton import filenameToSmoothedAndScaledpxArray
+from image_stitching import filenameToSmoothedAndScaledpxArray
 from data_exploration.histograms import plot_histogram
 
 from timeit import default_timer as timer

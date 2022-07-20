@@ -3,7 +3,7 @@ import argparse
 import os
 from matplotlib import pyplot
 
-import assignment_two_extension.distancedistributions
+import solem.distancedistributions
 from data_exploration.image_plot import plot_side_by_side_pairs
 from data_exploration.util import reject_outliers
 import imageIO.readwrite as IORW

@@ -32,15 +32,15 @@ A basic image stitching program written by Neville Loh and Nicholas Berg.
 
 ## Linux/Mac
 ```
-python3 CS773StitchingSkeleton.py
+python3 image_stitching.py
 ```
 
 ## Windows
 ```
-python CS773StitchingSkeleton.py
+python image_stitching.py
 
 For the ML extension, the command is:
-python ./assignment_three_machine_learning/test.py --dataset 773image_outfill --data_file ./assignment_three_machine_learning/imgs/source_images --load_model_dir ./assignment_three_machine_learning/checkpoints/cityscapes-srn-subpixel-gc64 --model srn --feat_expansion_op subpixel --use_cn 1 --random_crop 0 --random_mask 0 --img_shapes 256,512,3 --mask_shapes 256,256 --g_cnum 64
+python ./segmantic_resnet/test.py --dataset 773image_outfill --data_file ./segmantic_resnet/imgs/source_images --load_model_dir ./segmantic_resnet/checkpoints/cityscapes-srn-subpixel-gc64 --model srn --feat_expansion_op subpixel --use_cn 1 --random_crop 0 --random_mask 0 --img_shapes 256,512,3 --mask_shapes 256,256 --g_cnum 64
 ```
 
 Running the main file without arguments will result in the default image being stich to gether
@@ -88,26 +88,61 @@ python3 CS773StitchingSkeleton.py images/panoramaStitching/oxford_left_berg_loh_
 
 # Results:
 
-## Main Task: Complete Image Stiching with Computed Homography, RANSAC, and Image Warping
-
-![Tongariro Stiched](./images/COMPSCI_773_Final_Report_images/tongariro-stiched.png)
-
-![Oxford Stiched](./images/COMPSCI_773_Final_Report_images/Oxford_Stiched.png)
-
-![Snow Stiched](./images/COMPSCI_773_Final_Report_images/Snow_Stiched_White_Ghosting.png)
+## Main Task: Normalized Cross Correlation (NCC) based brute force matching using a precomputed axis-aligned descriptor.
 
 
-## Extension 1: Optimisations and Presentation of Code:
+## Optimisation of the NCC Matching
+We performed a number of performance optimisations to decrease runtime of our NCC. 
+Additionally, using the intuition that our panoramas would be unlikely to experience drastic rotation around the z axis, 
+we made the assumption that the length and gradiant of the lines connecting features should be tightly distributed. We used 
+statistical anaylsis to design a filtering step which significiantly improves signal to noise (reducing false positive matches without
+reducing true positive matches). Additionally, we combined our low level implementation of NCC with an existing implementation of NCC
+based on Solem (2012)'s Computer Vision textbook. Finally, we performed "sanity checks" by testing our system on three different pairs of images, 
+and checking the extent to which unrelated images would be mapped, or similarly the extent to which two identical images are mapped. Lines have been plotted in distinct colour to better visually
+identify true and false positive matches.
+
+![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
+for a pair of images suitable for a landscape panorama.](./images/NCC_OUTPUTS/MOUNTAIN_NCC_Filtered.png)
+
+
+## Comparison with SIFT feature detector.
+As our third extension, we utilised the VLFeat open source library to more easily implement a SIFT feature detector. 
+This implementation was used to perform the same tests as our two NCC implementations and HOG implementation, for a comparison
+of different feature detectors across a common image set.
+![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
+for a pair of images suitable for a landscape panorama.](./images/SIFT_OUTPUTS/MOUNTAINT_SWIFT_FEATURES.png)
+
+## Parameter exploration and optimisation for different subjects.
+Continuing on from Phase 1, we had a number of python packages that automated the application of our feature detectors and matching algorithms, and that would produce simple statistical analyses. It is interesting to note that only after two iterations of a relatively small number of different implementations, the number of combinations of parameters and methods already yields tens of thousands of possible experimental conditions. Given the focus of this assignment was on NCC, we chose to focus our optimisation on NCC parameters, and considered six thresholds (0.999, 0.99, 0.9, 0.5, 0.1, 0.01) and seven windows radii (3, 5, 7, 9, 11, 15, 21) for two different implementations of NCC (Berg-Loh and Solem) over three pairs of images (Tongariro, Oxford, Playground) for a large but manageable collection of 252 experimental conditions. Notably, not all combinations yielded matched pairs, helpfully shrinking our data set. Additionally we performed "reasonability tests" along the way, including running the same image for both left and right channels, or unrelated images. Generally, under reasonable values, this produced the desired result of a large and tight distribution (for mapping an image to itself) and no matched pairs (for the unrelated images). 
+![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
+for a pair of images suitable for a landscape panorama.](./images/NCCParamTuning.gif)
+
+
+## Comparison with HOG feature detector.
+As our second extension, we researched implementations of Histogram of Oriented gradients, and combined and modified 
+existing implementations of the HOG feature detector to fit into our workflow, allowing comparison
+with our existing image sets. 
+
+![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
+for a pair of images suitable for a landscape panorama.](./images/HOG_OUTPUTS/HOG_MOUNTAIN_Crop_negative.png)
+
+## Optimisations and Presentation of Code:
 Throughout our development of this image stitching application, we have made several performance and usability enhancements to our codebase to ensure good performance. Particularly for milestone 3, in order to avoid 
 recomputing, we have added caching functionalities that allow us to investigate specific parameters without recomputing the entire process. 
 
 
-## Extension 2: Ghost Removal
+## Complete Image Stiching with Computed Homography, RANSAC, and Image Warping
+
+![Snow Stiched](./images/COMPSCI_773_Final_Report_images/Snow_Stiched_White_Ghosting.png)
+
+
+
+## Ghost Removal
 As our second extension, we noticed some artefacts were produced that were not a result of the stiching, but rather defects in our source images. This is a common issue in panoramas taken in busy locations as moving people
  across the different photos taken at different time can cause strange "ghost like" artefacts. Building on work by [Uyttendaele et al.](https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Uyttendaele01.pdf) we introduced code to minimise and remove these artefacts.
 ![Removal of a "ghost" artefact from our source images](./images/COMPSCI_773_Final_Report_images/Ghost_removal.png)
 
-## Extension 3: Extrapolation of images using machine learning.
+## Extrapolation of images using machine learning.
 As our third extension, we considered the case where a photo was taken on a hiking trip, but unfortunately the second panorama image was lost (or not taken) and a panorama was still desirable. 
 Given advances in machine learning and the availability of large datasets of landscape images, we hypothesised that it might be possible train an algorithm to 
 predict the surrounds of an image. Having researched this topic, we built on work produced by the dvlab, [specficially Wang et al. 2019](https://jiaya.me/papers/imgextrapolation_cvpr19.pdf) by
@@ -119,8 +154,11 @@ using their algorithm retrained on the places2 dataset. This produced some relat
 ![Machine learning outfilling of image of bryce](./images/COMPSCI_773_Final_Report_images/ML-outfill-bryce.png)
 
 
-## Extension 4: Parameter exploration and optimisation for different subjects.
-We continued our work on tuning parameters, by using our previous extension results to optimise the stitching outputs on our test images.
-![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
-for a pair of images suitable for a landscape panorama.](./images/NCCParamTuning.gif)
+[//]: # (## Extension 4: Parameter exploration and optimisation for different subjects.)
+
+[//]: # (We continued our work on tuning parameters, by using our previous extension results to optimise the stitching outputs on our test images.)
+
+[//]: # (![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected )
+
+[//]: # (for a pair of images suitable for a landscape panorama.]&#40;./images/NCCParamTuning.gif&#41;)
 
