@@ -106,7 +106,7 @@ for a pair of images suitable for a landscape panorama.](./images/NCC_OUTPUTS/MO
 
 
 ## Comparison with SIFT feature detector.
-As our third extension, we utilised the VLFeat open source library to more easily implement a SIFT feature detector. 
+We utilised the VLFeat open source library to more easily implement a SIFT feature detector. 
 This implementation was used to perform the same tests as our two NCC implementations and HOG implementation, for a comparison
 of different feature detectors across a common image set.
 ![The iltered output of our normalized cross correlation descriptor matching, lines are parrallel as would be intuitively expected 
@@ -119,7 +119,7 @@ for a pair of images suitable for a landscape panorama.](./images/NCCParamTuning
 
 
 ## Comparison with HOG feature detector.
-As our second extension, we researched implementations of Histogram of Oriented gradients, and combined and modified 
+We researched implementations of Histogram of Oriented gradients, and combined and modified 
 existing implementations of the HOG feature detector to fit into our workflow, allowing comparison
 with our existing image sets. 
 
@@ -138,12 +138,12 @@ recomputing, we have added caching functionalities that allow us to investigate 
 
 
 ## Ghost Removal
-As our second extension, we noticed some artefacts were produced that were not a result of the stiching, but rather defects in our source images. This is a common issue in panoramas taken in busy locations as moving people
+We noticed some artefacts were produced that were not a result of the stiching, but rather defects in our source images. This is a common issue in panoramas taken in busy locations as moving people
  across the different photos taken at different time can cause strange "ghost like" artefacts. Building on work by [Uyttendaele et al.](https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Uyttendaele01.pdf) we introduced code to minimise and remove these artefacts.
 ![Removal of a "ghost" artefact from our source images](./images/COMPSCI_773_Final_Report_images/Ghost_removal.png)
 
 ## Extrapolation of images using machine learning.
-As our third extension, we considered the case where a photo was taken on a hiking trip, but unfortunately the second panorama image was lost (or not taken) and a panorama was still desirable. 
+We considered the case where a photo was taken on a hiking trip, but unfortunately the second panorama image was lost (or not taken) and a panorama was still desirable. 
 Given advances in machine learning and the availability of large datasets of landscape images, we hypothesised that it might be possible train an algorithm to 
 predict the surrounds of an image. Having researched this topic, we built on work produced by the dvlab, [specficially Wang et al. 2019](https://jiaya.me/papers/imgextrapolation_cvpr19.pdf) by
 using their algorithm retrained on the places2 dataset. This produced some relatively convincing interpretations of the surrounds, shown below, and suggests promise for further image enhancement.
