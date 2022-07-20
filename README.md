@@ -1,4 +1,4 @@
-# COMPSCI 773 Assignment 1: Berg, N. & Loh, N.
+# Panorama Generator : Berg, N. & Loh, N.
 
 ## Author
 
